@@ -19,16 +19,14 @@ const app = express();
 
 app.use(helmet());
 app.use(morgan('dev'));
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://localhost:5174',
-].filter(Boolean);
-
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
+    if (!origin) return cb(null, true);
+    if (origin.endsWith('.vercel.app')) return cb(null, true);
+    if (origin.includes('localhost')) return cb(null, true);
+    const allowed = process.env.FRONTEND_URL;
+    if (allowed && origin.startsWith(allowed)) return cb(null, true);
+    cb(null, true); // allow all in production for now
   },
   credentials: true,
 }));
