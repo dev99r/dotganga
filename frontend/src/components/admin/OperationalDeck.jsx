@@ -242,7 +242,7 @@ export default function OperationalDeck() {
     : 0;
 
   return (
-    <div className="space-y-5 max-w-5xl animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
 
       {/* ── Top bar ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">

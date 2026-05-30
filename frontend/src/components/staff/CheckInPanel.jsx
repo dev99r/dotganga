@@ -70,7 +70,7 @@ export default function CheckInPanel({ company }) {
   const shiftEnd   = company?.officeEndTime   || '18:30';
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
 
       {/* Hero clock card */}
       <div className="relative overflow-hidden rounded-3xl bg-blue-950 text-white p-6 shadow-xl">

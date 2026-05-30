@@ -13,6 +13,8 @@ const payrollRoutes = require('./routes/payroll');
 const companyRoutes = require('./routes/company');
 const staffRoutes = require('./routes/staff');
 const dailyReportRoutes = require('./routes/dailyReport');
+const taskRoutes        = require('./routes/tasks');
+const leadRoutes        = require('./routes/leads');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -53,6 +55,8 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/daily-report', dailyReportRoutes);
+app.use('/api/tasks',       taskRoutes);
+app.use('/api/leads',       leadRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running', timestamp: new Date().toISOString() });

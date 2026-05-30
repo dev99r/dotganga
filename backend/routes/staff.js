@@ -6,6 +6,16 @@ const SalaryProfile = require('../models/SalaryProfile');
 const Attendance    = require('../models/Attendance');
 const { protect, adminOnly, managerOrAdmin } = require('../middleware/auth');
 
+// GET /api/staff/directory — lightweight list for all logged-in users (for task assignment)
+router.get('/directory', protect, async (req, res) => {
+  try {
+    const staff = await User.find({ isActive: true, role: { $in: ['Staff', 'Manager', 'Admin'] } })
+      .select('name designation department role')
+      .sort({ name: 1 });
+    res.json({ success: true, staff });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
 // GET /api/staff — all staff (Admin + Manager)
 router.get('/', protect, managerOrAdmin, async (req, res, next) => {
   try {
