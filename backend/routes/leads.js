@@ -85,6 +85,27 @@ router.delete('/:id', protect, managerOrAdmin, async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
+// POST /api/leads/bulk — WhatsApp / bulk number import
+router.post('/bulk', protect, async (req, res) => {
+  try {
+    const { leads } = req.body;
+    if (!Array.isArray(leads) || !leads.length)
+      return res.status(400).json({ success: false, message: 'No leads provided' });
+    const toInsert = leads.map(l => ({
+      name:      l.name    || l.phone || 'WhatsApp Lead',
+      phone:     l.phone   || '',
+      email:     l.email   || '',
+      company:   l.company || '',
+      source:    l.source  || 'WhatsApp',
+      status:    'New',
+      priority:  'Warm',
+      createdBy: req.user.name,
+    }));
+    const inserted = await Lead.insertMany(toInsert, { ordered: false });
+    res.json({ success: true, imported: inserted.length, leads: inserted });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
 // POST /api/leads/import — base64 file upload
 router.post('/import', protect, async (req, res) => {
   try {

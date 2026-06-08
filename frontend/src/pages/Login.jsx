@@ -36,7 +36,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white shadow-2xl mb-4">
-            <img src="/logo.svg" alt="DotGanga" className="w-16 h-10 object-contain" />
+            <img src="/image.png" alt="DotGanga" className="w-16 h-16 object-contain" />
           </div>
           <h1 className="text-white font-black text-2xl tracking-tight">DotGanga Attendance</h1>
           <p className="text-blue-400 text-sm mt-1">Mahamandir · Jodhpur, Rajasthan</p>
