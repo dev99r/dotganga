@@ -11,6 +11,7 @@ import LeadsView             from '../components/admin/LeadsView';
 import UserManagement        from '../components/admin/UserManagement';
 import ClientsManagement     from '../components/admin/ClientsManagement';
 import SocialMediaManager    from '../components/admin/SocialMediaManager';
+import ClientCalendarMaster  from '../components/admin/ClientCalendarMaster';
 import MetaAdsView           from '../components/admin/MetaAdsView';
 import ApprovalsView         from '../components/admin/ApprovalsView';
 import MediaLibraryView      from '../components/admin/MediaLibraryView';
@@ -26,6 +27,7 @@ const NAV_FULL = [
   { id:'leads',      label:'Leads CRM',     short:'Leads',   icon:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', badge:'CRM', group:'agency' },
   { id:'clients',    label:'Clients',       short:'Clients', icon:'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', badge:'NEW', group:'agency' },
   { id:'social',     label:'Social Media',  short:'Social',  icon:'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z', badge:'NEW', group:'agency' },
+  { id:'calmaster',  label:'Client Calendars', short:'Cal',  icon:'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', badge:'NEW', group:'agency' },
   { id:'metaads',    label:'Meta Ads',      short:'Ads',     icon:'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', badge:'NEW', group:'agency' },
   { id:'approvals',  label:'Approvals',     short:'OK',      icon:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', badge:'NEW', group:'agency' },
   { id:'media',      label:'Media Library', short:'Media',   icon:'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z', badge:'NEW', group:'agency' },
@@ -36,24 +38,25 @@ const NAV_FULL = [
 const ROLE_NAV = {
   'Super Admin': NAV_FULL.map(n => n.id),
   'Admin':       NAV_FULL.map(n => n.id),
-  'Manager':     ['dashboard','attendance','staff','reports','tasks','leads','clients','social','approvals','media'],
-  'SMM':         ['social','approvals','media','clients'],
-  'Meta Ads Manager': ['metaads','clients'],
+  'Manager':     ['dashboard','attendance','staff','reports','tasks','leads','clients','social','calmaster','approvals','media'],
+  'SMM':         ['social','calmaster','approvals','media','clients'],
+  'Meta Ads Manager': ['metaads','clients','calmaster'],
 };
 
 // Bottom-bar quick-access tabs per role (max 4; "More" is always 5th)
 const QUICK_TABS = {
-  'Super Admin':       ['dashboard','social','clients','leads'],
-  'Admin':             ['dashboard','social','clients','leads'],
-  'Manager':           ['dashboard','reports','tasks','clients'],
-  'SMM':               ['social','approvals','clients','media'],
-  'Meta Ads Manager':  ['metaads','clients'],
+  'Super Admin':       ['dashboard','calmaster','clients','leads'],
+  'Admin':             ['dashboard','calmaster','clients','leads'],
+  'Manager':           ['dashboard','calmaster','reports','tasks'],
+  'SMM':               ['calmaster','social','approvals','media'],
+  'Meta Ads Manager':  ['calmaster','metaads','clients'],
 };
 
 const TITLES = {
   dashboard:'Operational Dashboard', attendance:'30-Day Attendance Grid', staff:'Staff Management',
   payroll:'Payroll Matrix', reports:'Daily Reports', tasks:'Task Board',
   leads:'Leads CRM', clients:'Clients', social:'Social Media Manager',
+  calmaster:'Client Calendars Master',
   metaads:'Meta Ads', approvals:'Approvals', media:'Media Library',
   users:'User Management', settings:'Office Configuration',
 };
@@ -72,7 +75,7 @@ export default function AdminMatrix() {
   const quickTabIds = QUICK_TABS[user?.role] || QUICK_TABS['Manager'];
   const quickTabs   = quickTabIds.map(id => NAV_FULL.find(n => n.id === id)).filter(Boolean);
   const initials    = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2) || 'A';
-  const fullHeight  = ['tasks','leads','social','approvals','media'].includes(activeNav);
+  const fullHeight  = ['tasks','leads','social','calmaster','approvals','media'].includes(activeNav);
 
   const grouped = GROUP_ORDER
     .map(g => ({ group: g, items: visibleNav.filter(n => n.group === g) }))
@@ -190,8 +193,9 @@ export default function AdminMatrix() {
         }`}>
           {activeNav === 'tasks'     ? <TaskBoard />            :
            activeNav === 'leads'     ? <LeadsView />            :
-           activeNav === 'social'    ? <SocialMediaManager />   :
-           activeNav === 'approvals' ? <ApprovalsView />        :
+           activeNav === 'social'     ? <SocialMediaManager />     :
+           activeNav === 'calmaster' ? <ClientCalendarMaster />  :
+           activeNav === 'approvals' ? <ApprovalsView />          :
            activeNav === 'media'     ? <MediaLibraryView />     :
            (
             <div className="max-w-6xl mx-auto">
