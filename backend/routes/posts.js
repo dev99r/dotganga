@@ -140,7 +140,7 @@ router.patch('/:id/approve', protect, async (req, res) => {
 });
 
 // DELETE /api/posts/:id
-router.delete('/:id', protect, agencyStaff, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
     await Post.findByIdAndDelete(req.params.id);
     await Approval.deleteMany({ postId: req.params.id });
