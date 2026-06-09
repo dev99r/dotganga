@@ -3,7 +3,8 @@ import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameDay, isToday, isSameMonth, addMonths, subMonths, getWeek,
+  isSameDay, isToday, isSameMonth, addMonths, subMonths, addDays,
+  startOfWeek, endOfWeek, isBefore, startOfDay,
 } from 'date-fns';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -606,6 +607,254 @@ function AnalyticsView({ posts, clients, selectedClient }) {
   );
 }
 
+// ─── TodayView ────────────────────────────────────────────────────────────────
+function TodayView({ allPosts, clients, onPostClick, onAddPost, onMarkPosted, onRefresh }) {
+  const now      = new Date();
+  const today    = startOfDay(now);
+  const tomorrow = startOfDay(addDays(now, 1));
+  const dayAfter = startOfDay(addDays(now, 2));
+
+  const todayPosts    = allPosts.filter(p => p.scheduledDate && isSameDay(new Date(p.scheduledDate), today));
+  const tomorrowPosts = allPosts.filter(p => p.scheduledDate && isSameDay(new Date(p.scheduledDate), tomorrow));
+  const dayAfterPosts = allPosts.filter(p => p.scheduledDate && isSameDay(new Date(p.scheduledDate), dayAfter));
+
+  const reelsToday    = todayPosts.filter(p => p.category === 'Reel');
+  const carouselsDay  = todayPosts.filter(p => p.category === 'Carousel');
+  const storiesDay    = todayPosts.filter(p => p.category === 'Story');
+  const organicDay    = todayPosts.filter(p => p.category === 'Organic');
+  const adDay         = todayPosts.filter(p => p.category === 'Ad Creative');
+  const postedToday   = todayPosts.filter(p => p.status === 'Posted');
+  const pendingToday  = todayPosts.filter(p => p.approvalStatus === 'Pending');
+
+  // Overdue = scheduled in the past, not yet posted
+  const overdue = allPosts.filter(p => {
+    if (!p.scheduledDate || p.status === 'Posted') return false;
+    const d = startOfDay(new Date(p.scheduledDate));
+    return isBefore(d, today);
+  });
+
+  // This week stats
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+  const weekEnd   = endOfWeek(now,   { weekStartsOn: 1 });
+  const weekPosts = allPosts.filter(p => {
+    if (!p.scheduledDate) return false;
+    const d = new Date(p.scheduledDate);
+    return d >= weekStart && d <= weekEnd;
+  });
+  const weekReels   = weekPosts.filter(p => p.category === 'Reel').length;
+  const weekPosted  = weekPosts.filter(p => p.status === 'Posted').length;
+  const weekPending = weekPosts.filter(p => p.approvalStatus === 'Pending').length;
+
+  const [markingId, setMarkingId] = useState(null);
+  const markPosted = async (post) => {
+    setMarkingId(post._id);
+    try {
+      await api.put(`/posts/${post._id}`, { status: 'Posted', postedAt: new Date() });
+      toast.success('✅ Marked as Posted!');
+      onRefresh();
+    } catch { toast.error('Failed.'); }
+    finally { setMarkingId(null); }
+  };
+
+  const PostRow = ({ post }) => {
+    const c  = getCat(post.category);
+    const ap = APPROVAL_CFG[post.approvalStatus];
+    const cl = clients.find(cl => cl._id === (post.clientId?._id || post.clientId));
+    return (
+      <div className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-0 group"
+        onClick={() => onPostClick(post)}>
+        <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${c.grad} flex items-center justify-center text-xl shrink-0 shadow-sm`}>
+          {c.icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+            <p className="text-sm font-black text-slate-800 truncate">{cl?.businessName || post.clientId?.businessName || 'Client'}</p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.light}`}>{c.icon} {post.category}</span>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ap?.badge || 'bg-slate-100'}`}>{ap?.icon} {post.approvalStatus}</span>
+            {post.aiGenerated && <span className="text-[10px] bg-violet-100 text-violet-700 font-bold px-2 py-0.5 rounded-full">✨ AI</span>}
+          </div>
+          <p className="text-xs text-slate-400 line-clamp-1">{post.caption || '(no caption)'}</p>
+          <div className="flex items-center gap-2 mt-1">
+            {post.platforms?.map(p => <span key={p} className="text-xs">{PLATFORM_ICONS[p]}</span>)}
+            {post.scheduledDate && <span className="text-[10px] text-slate-400 font-semibold">📅 {format(new Date(post.scheduledDate), 'HH:mm')}</span>}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {post.status !== 'Posted' && (
+            <button onClick={e => { e.stopPropagation(); markPosted(post); }}
+              disabled={markingId === post._id}
+              className="opacity-0 group-hover:opacity-100 text-[10px] font-black bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-xl transition-all disabled:opacity-50 active:scale-95">
+              {markingId === post._id ? '…' : '✅ Post'}
+            </button>
+          )}
+          {post.status === 'Posted' && (
+            <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-xl">✅ Posted</span>
+          )}
+          <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    );
+  };
+
+  const SectionCard = ({ title, sub, posts: dayPosts, accent, addDate, emptyMsg }) => (
+    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className={`px-5 py-4 ${accent} flex items-center justify-between`}>
+        <div>
+          <p className="font-black text-base text-white">{title}</p>
+          <p className="text-sm text-white/70 mt-0.5">{sub}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-black bg-white/20 text-white px-3 py-1.5 rounded-full">{dayPosts.length} posts</span>
+          <button onClick={() => onAddPost(addDate)} className="w-8 h-8 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center font-black text-sm transition-colors">+</button>
+        </div>
+      </div>
+      {dayPosts.length === 0 ? (
+        <div className="py-10 text-center">
+          <p className="text-3xl mb-2">📅</p>
+          <p className="text-slate-400 font-semibold text-sm">{emptyMsg}</p>
+          <button onClick={() => onAddPost(addDate)} className="mt-3 text-xs font-black text-blue-600 hover:text-blue-800">+ Schedule a post →</button>
+        </div>
+      ) : (
+        <div className="divide-y divide-slate-50">
+          {dayPosts.map(p => <PostRow key={p._id} post={p}/>)}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="px-5 pb-5 space-y-5">
+      {/* ── Big hero stats ── */}
+      <div className="bg-gradient-to-br from-blue-950 to-violet-900 rounded-3xl p-5 text-white">
+        <p className="text-blue-300 text-xs font-bold uppercase tracking-wider mb-1">{format(now, 'EEEE, dd MMMM yyyy')}</p>
+        <p className="text-white font-black text-lg mb-4">
+          {todayPosts.length === 0 ? 'Nothing scheduled today' : `${todayPosts.length} post${todayPosts.length > 1 ? 's' : ''} scheduled today`}
+        </p>
+        {/* Category breakdown mega-stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { icon:'🎬', label:'Reels Today',   value:reelsToday.length,   grad:'from-pink-500 to-rose-500',    urgent: reelsToday.length > 0 },
+            { icon:'🎠', label:'Carousels',     value:carouselsDay.length, grad:'from-violet-500 to-purple-500',urgent: false },
+            { icon:'📱', label:'Stories',       value:storiesDay.length,   grad:'from-blue-500 to-cyan-500',    urgent: false },
+            { icon:'📸', label:'Organic',       value:organicDay.length,   grad:'from-emerald-500 to-teal-500', urgent: false },
+            { icon:'✅', label:'Posted',        value:postedToday.length,  grad:'from-emerald-600 to-green-600',urgent: false },
+            { icon:'⏳', label:'Need Approval', value:pendingToday.length, grad:'from-amber-500 to-orange-500', urgent: pendingToday.length > 0 },
+          ].map(s => (
+            <div key={s.label} className={`bg-gradient-to-br ${s.grad} rounded-2xl p-3 text-center relative overflow-hidden`}>
+              {s.urgent && s.value > 0 && <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-white rounded-full animate-ping"/>}
+              <p className="text-3xl font-black text-white">{s.value}</p>
+              <p className="text-white/80 text-[10px] font-bold mt-0.5 leading-tight">{s.icon} {s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Overdue alert ── */}
+      {overdue.length > 0 && (
+        <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center text-xl shrink-0">🚨</div>
+            <div className="flex-1">
+              <p className="font-black text-red-800 text-base">{overdue.length} Overdue Post{overdue.length > 1 ? 's' : ''}!</p>
+              <p className="text-red-600 text-sm mt-0.5">These were scheduled in the past but not marked as Posted.</p>
+            </div>
+          </div>
+          <div className="mt-4 space-y-2">
+            {overdue.slice(0, 5).map(post => {
+              const c  = getCat(post.category);
+              const cl = clients.find(cl => cl._id === (post.clientId?._id || post.clientId));
+              return (
+                <div key={post._id} onClick={() => onPostClick(post)}
+                  className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 cursor-pointer hover:shadow-sm transition-all">
+                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${c.grad} flex items-center justify-center text-base shrink-0`}>{c.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-700 truncate">{cl?.businessName || 'Client'} — {post.category}</p>
+                    <p className="text-xs text-red-500 font-semibold">Was due: {format(new Date(post.scheduledDate), 'dd MMM, HH:mm')}</p>
+                  </div>
+                  <button onClick={e => { e.stopPropagation(); markPosted(post); }} disabled={markingId === post._id}
+                    className="text-[10px] font-black bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-xl transition-all active:scale-95 shrink-0">
+                    {markingId === post._id ? '…' : '✅ Mark Done'}
+                  </button>
+                </div>
+              );
+            })}
+            {overdue.length > 5 && <p className="text-xs text-red-500 font-bold text-center">+{overdue.length - 5} more overdue posts</p>}
+          </div>
+        </div>
+      )}
+
+      {/* ── This week mini summary ── */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label:'This Week Posts', value:weekPosts.length, icon:'📅', bg:'bg-white', color:'text-slate-800' },
+          { label:'Reels This Week', value:weekReels,        icon:'🎬', bg:'bg-pink-50',    color:'text-pink-700'    },
+          { label:'Posted This Week',value:weekPosted,       icon:'✅', bg:'bg-emerald-50', color:'text-emerald-700' },
+        ].map(s => (
+          <div key={s.label} className={`${s.bg} rounded-2xl border border-slate-100 p-4 text-center shadow-sm`}>
+            <p className="text-2xl mb-1">{s.icon}</p>
+            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            <p className="text-xs text-slate-400 font-semibold mt-1">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Today's content ── */}
+      <SectionCard
+        title="Today's Content"
+        sub={format(now, 'EEEE, dd MMMM')}
+        posts={todayPosts}
+        accent="bg-gradient-to-r from-blue-950 to-blue-800"
+        addDate={now}
+        emptyMsg="Nothing scheduled for today"
+      />
+
+      {/* ── Tomorrow's preview ── */}
+      <SectionCard
+        title="Tomorrow's Schedule"
+        sub={format(addDays(now, 1), 'EEEE, dd MMMM')}
+        posts={tomorrowPosts}
+        accent="bg-gradient-to-r from-violet-700 to-violet-600"
+        addDate={addDays(now, 1)}
+        emptyMsg="Nothing scheduled for tomorrow"
+      />
+
+      {/* ── Day after ── */}
+      {dayAfterPosts.length > 0 && (
+        <SectionCard
+          title={format(addDays(now, 2), 'EEEE')}
+          sub={format(addDays(now, 2), 'dd MMMM')}
+          posts={dayAfterPosts}
+          accent="bg-gradient-to-r from-slate-600 to-slate-500"
+          addDate={addDays(now, 2)}
+          emptyMsg=""
+        />
+      )}
+
+      {/* ── Category grid today ── */}
+      {todayPosts.length > 0 && (
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+          <p className="font-black text-slate-800 text-base mb-4">Today by Category</p>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {[
+              { label:'Reels',       count:reelsToday.length,   ...getCat('Reel')         },
+              { label:'Carousels',   count:carouselsDay.length, ...getCat('Carousel')     },
+              { label:'Stories',     count:storiesDay.length,   ...getCat('Story')        },
+              { label:'Organic',     count:organicDay.length,   ...getCat('Organic')      },
+              { label:'Ad Creative', count:adDay.length,        ...getCat('Ad Creative')  },
+            ].map(s => (
+              <div key={s.label} className={`rounded-2xl p-3 text-center ${s.light}`}>
+                <p className="text-2xl mb-1">{s.icon}</p>
+                <p className="text-2xl font-black">{s.count}</p>
+                <p className="text-xs font-bold mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Script Generator Templates ───────────────────────────────────────────────
 const SCRIPT_TEMPLATES = {
   Reel:    { hook:['🔥 Wait — you NEED to see this before you scroll past...','POV: You just found the secret everyone\'s talking about 👀'], body:['Here\'s what most people don\'t know:\n→ Point 1\n→ Point 2\n→ Point 3'], cta:['Drop a 🔥 if this helped. Follow for more!','Save this for later & share with a friend!'] },
@@ -936,10 +1185,11 @@ function PostModal({ mode, initial, clients, preDate, onClose, onSaved }) {
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function SocialMediaManager() {
   const [posts,        setPosts]        = useState([]);
+  const [allPosts,     setAllPosts]     = useState([]); // unfiltered, for Today view
   const [clients,      setClients]      = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [month,        setMonth]        = useState(new Date());
-  const [view,         setView]         = useState('calendar');
+  const [view,         setView]         = useState('today');
   const [clientFilter, setClientFilter] = useState('');
   const [filterCat,    setFilterCat]    = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -954,10 +1204,19 @@ export default function SocialMediaManager() {
     try {
       const from   = format(startOfMonth(month), 'yyyy-MM-dd');
       const to     = format(endOfMonth(month),   'yyyy-MM-dd');
-      const params = new URLSearchParams({ from, to, limit: 200 });
+      const params = new URLSearchParams({ from, to, limit: 300 });
       if (clientFilter) params.append('clientId', clientFilter);
-      const [pRes, cRes] = await Promise.all([api.get(`/posts?${params}`), api.get('/clients')]);
+      // Also load a wider window for Today view (30 days back + 60 forward)
+      const allFrom = format(addDays(new Date(), -30), 'yyyy-MM-dd');
+      const allTo   = format(addDays(new Date(),  60), 'yyyy-MM-dd');
+      const allParams = new URLSearchParams({ from: allFrom, to: allTo, limit: 500 });
+      const [pRes, allRes, cRes] = await Promise.all([
+        api.get(`/posts?${params}`),
+        api.get(`/posts?${allParams}`),
+        api.get('/clients'),
+      ]);
       setPosts(pRes.data.posts || []);
+      setAllPosts(allRes.data.posts || []);
       setClients(cRes.data.clients?.filter(c => c.isActive) || []);
     } catch { toast.error('Failed to load.'); }
     finally { setLoading(false); }
@@ -1025,10 +1284,15 @@ export default function SocialMediaManager() {
   const selectedClient = clients.find(c => c._id === clientFilter);
   const hasFilters = filterCat || filterStatus || filterPlatform;
 
+  const todayCount    = allPosts.filter(p => p.scheduledDate && isSameDay(new Date(p.scheduledDate), new Date())).length;
+  const tomorrowCount = allPosts.filter(p => p.scheduledDate && isSameDay(new Date(p.scheduledDate), addDays(new Date(), 1))).length;
+  const overdueCount  = allPosts.filter(p => p.scheduledDate && p.status !== 'Posted' && isBefore(startOfDay(new Date(p.scheduledDate)), startOfDay(new Date()))).length;
+
   const VIEWS = [
+    { v:'today',     icon:'⚡', label:'Today',    badge: overdueCount > 0 ? overdueCount : 0, badgeColor:'bg-red-500' },
     { v:'calendar',  icon:'📅', label:'Calendar'  },
     { v:'list',      icon:'📋', label:'List'       },
-    { v:'approvals', icon:'✅', label:'Approvals', badge: stats.pending },
+    { v:'approvals', icon:'✅', label:'Approvals', badge: stats.pending, badgeColor:'bg-amber-400' },
     { v:'analytics', icon:'📊', label:'Analytics'  },
   ];
 
@@ -1048,12 +1312,12 @@ export default function SocialMediaManager() {
           <div className="flex items-center gap-2 shrink-0">
             {/* View tabs */}
             <div className="flex bg-slate-100 rounded-xl p-1 gap-0.5">
-              {VIEWS.map(({ v, icon, label, badge }) => (
+              {VIEWS.map(({ v, icon, label, badge, badgeColor }) => (
                 <button key={v} onClick={() => setView(v)}
                   className={`relative px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${view === v ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
                   {icon} <span className="hidden sm:inline ml-1">{label}</span>
                   {badge > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 text-white text-[9px] font-black rounded-full flex items-center justify-center">{badge}</span>
+                    <span className={`absolute -top-1 -right-1 w-4 h-4 ${badgeColor || 'bg-amber-400'} text-white text-[9px] font-black rounded-full flex items-center justify-center`}>{badge}</span>
                   )}
                 </button>
               ))}
@@ -1066,26 +1330,28 @@ export default function SocialMediaManager() {
           </div>
         </div>
 
-        {/* Client filter tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <button onClick={() => setClientFilter('')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border-2 whitespace-nowrap transition-all shrink-0 ${!clientFilter ? 'bg-blue-950 text-white border-blue-950' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200'}`}>
-            All <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${!clientFilter ? 'bg-white text-blue-950' : 'bg-slate-100 text-slate-500'}`}>{posts.length}</span>
-          </button>
-          {clients.map(c => {
-            const cnt     = posts.filter(p => p.clientId?._id === c._id || p.clientId === c._id).length;
-            const pending = posts.filter(p => (p.clientId?._id === c._id || p.clientId === c._id) && p.approvalStatus === 'Pending').length;
-            return (
-              <button key={c._id} onClick={() => setClientFilter(c._id === clientFilter ? '' : c._id)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border-2 whitespace-nowrap transition-all shrink-0 ${clientFilter === c._id ? 'bg-blue-950 text-white border-blue-950' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'}`}>
-                <div className="w-4 h-4 rounded-md bg-emerald-500 flex items-center justify-center text-white text-[10px] font-black shrink-0">{c.businessName?.charAt(0)}</div>
-                {c.businessName}
-                {cnt > 0 && <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${clientFilter === c._id ? 'bg-white text-blue-950' : 'bg-slate-100 text-slate-500'}`}>{cnt}</span>}
-                {pending > 0 && <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-amber-400 text-white">{pending}</span>}
-              </button>
-            );
-          })}
-        </div>
+        {/* Client filter tabs — hide on Today view */}
+        {view !== 'today' && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button onClick={() => setClientFilter('')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border-2 whitespace-nowrap transition-all shrink-0 ${!clientFilter ? 'bg-blue-950 text-white border-blue-950' : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200'}`}>
+              All <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${!clientFilter ? 'bg-white text-blue-950' : 'bg-slate-100 text-slate-500'}`}>{posts.length}</span>
+            </button>
+            {clients.map(c => {
+              const cnt     = posts.filter(p => p.clientId?._id === c._id || p.clientId === c._id).length;
+              const pending = posts.filter(p => (p.clientId?._id === c._id || p.clientId === c._id) && p.approvalStatus === 'Pending').length;
+              return (
+                <button key={c._id} onClick={() => setClientFilter(c._id === clientFilter ? '' : c._id)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border-2 whitespace-nowrap transition-all shrink-0 ${clientFilter === c._id ? 'bg-blue-950 text-white border-blue-950' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'}`}>
+                  <div className="w-4 h-4 rounded-md bg-emerald-500 flex items-center justify-center text-white text-[10px] font-black shrink-0">{c.businessName?.charAt(0)}</div>
+                  {c.businessName}
+                  {cnt > 0 && <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${clientFilter === c._id ? 'bg-white text-blue-950' : 'bg-slate-100 text-slate-500'}`}>{cnt}</span>}
+                  {pending > 0 && <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-amber-400 text-white">{pending}</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Filter chips — category / platform / approval status */}
         {(view === 'list' || view === 'calendar') && (
@@ -1122,17 +1388,17 @@ export default function SocialMediaManager() {
         {(view === 'calendar' || view === 'list') && <QuotaBar posts={posts} client={selectedClient}/>}
 
         {/* Stats row */}
-        {view !== 'analytics' && (
+        {view !== 'analytics' && view !== 'today' && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {[
-              { label:'Total',     value:stats.total,     color:'text-slate-800'   },
-              { label:'Draft',     value:stats.draft,     color:'text-slate-400'   },
-              { label:'Scheduled', value:stats.scheduled, color:'text-blue-600'    },
-              { label:'Posted',    value:stats.posted,    color:'text-emerald-600' },
-              { label:'⏳ Pending',value:stats.pending,   color:'text-amber-600'   },
-              { label:'✅ OK',     value:stats.approved,  color:'text-emerald-600' },
+              { label:'Today 🎬',  value:todayCount,      color:'text-pink-600',    bg:'bg-pink-50'    },
+              { label:'Tomorrow',  value:tomorrowCount,   color:'text-violet-600',  bg:'bg-violet-50'  },
+              { label:'Scheduled', value:stats.scheduled, color:'text-blue-600',    bg:'bg-blue-50'    },
+              { label:'Posted ✅', value:stats.posted,    color:'text-emerald-600', bg:'bg-emerald-50' },
+              { label:'⏳ Pending',value:stats.pending,   color:'text-amber-600',   bg:'bg-amber-50'   },
+              { label:'Total',     value:stats.total,     color:'text-slate-700',   bg:'bg-white'      },
             ].map(s => (
-              <div key={s.label} className="bg-white rounded-xl border border-slate-100 px-2 py-2 text-center shadow-sm">
+              <div key={s.label} className={`${s.bg} rounded-xl border border-slate-100 px-2 py-2 text-center shadow-sm`}>
                 <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
                 <p className="text-xs text-slate-400 font-semibold leading-tight mt-0.5">{s.label}</p>
               </div>
@@ -1142,9 +1408,11 @@ export default function SocialMediaManager() {
       </div>
 
       {/* ── Views ── */}
-      <div className={`flex-1 overflow-auto ${view !== 'approvals' && view !== 'analytics' ? 'px-5 pb-5' : 'pb-5'}`}>
+      <div className={`flex-1 overflow-auto ${view !== 'approvals' && view !== 'analytics' && view !== 'today' ? 'px-5 pb-5' : 'pb-5'}`}>
         {loading ? (
           <div className="h-64 bg-slate-50 rounded-3xl animate-pulse mx-5"/>
+        ) : view === 'today' ? (
+          <TodayView allPosts={allPosts} clients={clients} onPostClick={p => setDrawer(p)} onAddPost={openAdd} onRefresh={load}/>
         ) : view === 'approvals' ? (
           <ApprovalsView posts={posts} clients={clients} onRefresh={load} onPostClick={p => setDrawer(p)}/>
         ) : view === 'analytics' ? (

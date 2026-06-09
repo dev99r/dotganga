@@ -5,9 +5,12 @@ const User     = require('../models/User');
 const Notification = require('../models/Notification');
 const { protect, adminOnly, managerOrAdmin, agencyStaff } = require('../middleware/auth');
 
-// GET /api/clients — list clients (agency staff)
-router.get('/', protect, agencyStaff, async (req, res) => {
+// GET /api/clients — list clients (all authenticated users — Staff need this for social calendar)
+router.get('/', protect, async (req, res) => {
   try {
+    if (req.user.role === 'Client') {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
     const { search, isActive } = req.query;
     const filter = {};
     if (isActive !== undefined) filter.isActive = isActive === 'true';
