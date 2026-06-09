@@ -532,6 +532,9 @@ async function seed() {
       isActive:         true,
     });
 
+    // Link client back to user (clientRef) — CRITICAL for portal login
+    await User.findByIdAndUpdate(clientUser._id, { clientRef: client._id });
+
     // Create posts + approvals
     let postCount = 0;
     for (const p of def.posts) {
