@@ -17,7 +17,8 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome, ${user.name.split(' ')[0]}! 👋`);
-      navigate(['Admin', 'Manager'].includes(user.role) ? '/admin' : '/staff', { replace: true });
+      const dest = user.role === 'Client' ? '/my-portal' : ['Admin','Manager','Super Admin','SMM','Meta Ads Manager'].includes(user.role) ? '/admin' : '/staff';
+      navigate(dest, { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid credentials.');
     } finally {

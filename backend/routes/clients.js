@@ -32,6 +32,19 @@ router.get('/', protect, agencyStaff, async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
+// GET /api/clients/my/portal — Client role: their own data
+router.get('/my/portal', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'Client') {
+      return res.status(403).json({ success: false, message: 'Client access only.' });
+    }
+    const client = await Client.findById(req.user.clientRef)
+      .populate('assignedSMM', 'name designation');
+    if (!client) return res.status(404).json({ success: false, message: 'Client profile not found.' });
+    res.json({ success: true, client });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
 // GET /api/clients/:id — single client
 router.get('/:id', protect, agencyStaff, async (req, res) => {
   try {
@@ -99,19 +112,6 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
     const client = await Client.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true });
     if (!client) return res.status(404).json({ success: false, message: 'Client not found.' });
     res.json({ success: true, message: 'Client deactivated.' });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
-});
-
-// GET /api/clients/my/portal — Client role: their own data
-router.get('/my/portal', protect, async (req, res) => {
-  try {
-    if (req.user.role !== 'Client') {
-      return res.status(403).json({ success: false, message: 'Client access only.' });
-    }
-    const client = await Client.findById(req.user.clientRef)
-      .populate('assignedSMM', 'name designation');
-    if (!client) return res.status(404).json({ success: false, message: 'Client profile not found.' });
-    res.json({ success: true, client });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 

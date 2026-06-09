@@ -6,8 +6,8 @@ const Notification = require('../models/Notification');
 const Client   = require('../models/Client');
 const { protect, agencyStaff } = require('../middleware/auth');
 
-// GET /api/posts — list posts
-router.get('/', protect, agencyStaff, async (req, res) => {
+// GET /api/posts — list posts (agency staff + Client role for their own posts)
+router.get('/', protect, async (req, res) => {
   try {
     const { clientId, status, approvalStatus, platform, from, to, page = 1, limit = 50 } = req.query;
     const filter = {};

@@ -8,8 +8,6 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const mongoose = require('mongoose');
-const bcrypt   = require('bcryptjs');
-
 const User          = require('./models/User');
 const Client        = require('./models/Client');
 const Post          = require('./models/Post');
@@ -304,7 +302,7 @@ async function seed() {
     const camps = await MetaCampaign.find({ clientId: existing._id });
     for (const c of camps) await MetaInsights.deleteMany({ campaignId: c._id });
     await MetaCampaign.deleteMany({ clientId: existing._id });
-    await User.deleteOne({ email: 'priya@bellavista.in' });
+    await User.deleteOne({ email: { $in: ['priya@bellavista.in', 'client@bellavista.in'] } });
     await Client.deleteOne({ _id: existing._id });
     console.log('   Done.');
   }
@@ -332,11 +330,10 @@ async function seed() {
   console.log(`🏪 Client created: ${client.businessName} (${client._id})`);
 
   // ── 3. Create client portal login ─────────────────────────────────────────
-  const pwHash = await bcrypt.hash('BellaVista@2026', 10);
   const clientUser = await User.create({
     name:      'Priya Sharma',
-    email:     'priya@bellavista.in',
-    password:  pwHash,
+    email:     'client@bellavista.in',
+    password:  'demo1234',
     role:      'Client',
     clientRef: client._id,
     designation: 'Owner',
@@ -344,7 +341,7 @@ async function seed() {
   });
   // Link userRef back to client
   await Client.findByIdAndUpdate(client._id, { userRef: clientUser._id });
-  console.log(`🔑 Client login created: priya@bellavista.in / BellaVista@2026`);
+  console.log(`🔑 Client login created: client@bellavista.in / demo1234`);
 
   // ── 4. Create posts ────────────────────────────────────────────────────────
   const postDocs = POSTS.map((p) => ({
@@ -384,8 +381,8 @@ async function seed() {
   console.log('════════════════════════════════════════════════════════');
   console.log('  Client       : Bella Vista Restaurant');
   console.log('  Industry     : Food & Beverage — Italian Restaurant, Mumbai');
-  console.log('  Portal Login : priya@bellavista.in');
-  console.log('  Password     : BellaVista@2026');
+  console.log('  Portal Login : client@bellavista.in');
+  console.log('  Password     : demo1234');
   console.log('  Posts        : 18 (Reels, Carousels, Stories, Organic, Ad Creative)');
   console.log('  Approvals    : Approved ✓ | Pending ⏳ | Revision ✏️ | Rejected ✕');
   console.log('  Campaigns    : 2 (Brand Awareness + Lead Gen)');
