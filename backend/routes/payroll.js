@@ -132,6 +132,20 @@ router.patch('/:id/status', protect, adminOnly, async (req, res, next) => {
   }
 });
 
+// DELETE /api/payroll?month=YYYY-MM — delete all payroll records for a month
+router.delete('/', protect, adminOnly, async (req, res, next) => {
+  try {
+    const { month } = req.query;
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ success: false, message: 'month must be in YYYY-MM format.' });
+    }
+    const result = await Payroll.deleteMany({ monthYear: month });
+    res.json({ success: true, message: `Deleted ${result.deletedCount} payroll record(s) for ${month}.`, deletedCount: result.deletedCount });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/payroll/export?month=YYYY-MM — export payroll to Excel
 router.get('/export', protect, adminOnly, async (req, res, next) => {
   try {

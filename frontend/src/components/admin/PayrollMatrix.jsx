@@ -18,6 +18,8 @@ export default function PayrollMatrix() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [totals, setTotals] = useState({ gross: 0, deductions: 0, net: 0 });
 
@@ -82,6 +84,23 @@ export default function PayrollMatrix() {
     }
   };
 
+  const handleClearPayroll = async () => {
+    setDeleting(true);
+    try {
+      const { data } = await api.delete(`/payroll?month=${selectedMonth}`);
+      toast.success(data.message || 'Payroll cleared.');
+      setPayrolls([]);
+      setTotals({ gross: 0, deductions: 0, net: 0 });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to clear payroll.');
+    } finally {
+      setDeleting(false);
+      setShowClearModal(false);
+    }
+  };
+
+  const monthLabel = format(new Date(selectedMonth + '-01'), 'MMMM yyyy');
+
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Controls */}
@@ -110,6 +129,14 @@ export default function PayrollMatrix() {
               <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> Export Excel</>
             )}
           </button>
+          {payrolls.length > 0 && (
+            <button onClick={() => setShowClearModal(true)} disabled={deleting} className="btn-danger">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Clear Payroll
+            </button>
+          )}
         </div>
       </div>
 
@@ -135,7 +162,7 @@ export default function PayrollMatrix() {
       <div className="card overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100">
           <h3 className="font-semibold text-slate-700">
-            {format(new Date(selectedMonth + '-01'), 'MMMM yyyy')} — {payrolls.length} records
+            {monthLabel} — {payrolls.length} records
           </h3>
         </div>
 
@@ -217,6 +244,49 @@ export default function PayrollMatrix() {
           </div>
         )}
       </div>
+
+      {/* Clear Payroll Confirmation Modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 animate-scale-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-black text-slate-900 text-base">Clear Payroll</h3>
+                <p className="text-xs text-slate-500">{monthLabel}</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mb-1">
+              This will permanently delete <span className="font-bold text-slate-900">{payrolls.length} payroll record{payrolls.length !== 1 ? 's' : ''}</span> for <span className="font-bold text-slate-900">{monthLabel}</span>.
+            </p>
+            <p className="text-xs text-red-500 font-semibold mb-5">This action cannot be undone.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowClearModal(false)}
+                disabled={deleting}
+                className="btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClearPayroll}
+                disabled={deleting}
+                className="btn-danger flex-1"
+              >
+                {deleting ? (
+                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Deleting...</>
+                ) : (
+                  'Yes, Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
