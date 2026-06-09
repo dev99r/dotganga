@@ -96,7 +96,7 @@ export default function AdminMatrix() {
         {/* Logo */}
         <div className="px-5 py-5 shrink-0">
           <div className="bg-white rounded-2xl px-4 py-3 flex items-center justify-center">
-            <img src="/logo.svg" alt="DotGanga" className="h-8 w-auto" />
+            <img src="/logo.png" alt="DotGanga" className="h-8 w-auto" />
           </div>
           <p className="text-blue-300/60 text-[10px] text-center mt-2 uppercase tracking-widest">
             {user?.role === 'Manager' ? 'Manager Console'
@@ -179,7 +179,7 @@ export default function AdminMatrix() {
           </div>
 
           <NotificationsBell />
-          <img src="/logo.svg" alt="DotGanga" className="lg:hidden h-6 w-auto ml-1" />
+          <img src="/logo.png" alt="DotGanga" className="lg:hidden h-6 w-auto ml-1" />
         </header>
 
         {/* Content — pb-16 on mobile so bottom nav never covers content */}

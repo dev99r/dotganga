@@ -98,7 +98,7 @@ export default function StaffHub() {
       <aside className="hidden lg:flex flex-col w-64 bg-blue-950 min-h-screen sticky top-0 shrink-0">
         {/* Logo */}
         <div className="px-5 py-6 border-b border-white/10">
-          <img src="/logo.svg" alt="DotGanga" className="h-8 w-auto" />
+          <img src="/logo.png" alt="DotGanga" className="h-8 w-auto object-contain" />
           <p className="text-blue-400 text-[10px] uppercase tracking-widest mt-1.5 font-bold">Staff Portal</p>
         </div>
 
@@ -152,7 +152,7 @@ export default function StaffHub() {
         {/* Mobile header */}
         <header className="lg:hidden sticky top-0 z-20 bg-white border-b border-slate-100 shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
-            <img src="/logo.svg" alt="DotGanga" className="h-7 w-auto" />
+            <img src="/logo.png" alt="DotGanga" className="h-7 w-auto object-contain" />
             <div className="flex items-center gap-2">
               <div className="text-right">
                 <p className="text-xs font-black text-slate-800">{user?.name}</p>
