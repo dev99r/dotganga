@@ -93,12 +93,12 @@ function AssignModal({ onClose, onCreated }) {
                   className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border-2 text-left transition-all ${
                     form.assignedToId===p._id ? 'border-blue-500 bg-blue-50' : 'border-slate-100 hover:border-slate-300'
                   }`}>
-                  <div className="w-7 h-7 rounded-lg bg-blue-950 flex items-center justify-center text-white text-[9px] font-black shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-blue-950 flex items-center justify-center text-white text-[10px] font-black shrink-0">
                     {ini(p.name)}
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-slate-800 truncate">{p.name}</p>
-                    <p className="text-[9px] text-slate-400 truncate">{p.designation}</p>
+                    <p className="text-[10px] text-slate-400 truncate">{p.designation}</p>
                   </div>
                 </button>
               ))}
@@ -110,7 +110,7 @@ function AssignModal({ onClose, onCreated }) {
             <div className="grid grid-cols-4 gap-1">
               {CATS.map(c => (
                 <button key={c.key} type="button" onClick={() => s({category:c.key})}
-                  className={`flex flex-col items-center gap-0.5 py-2 rounded-xl border-2 text-[9px] font-black transition-all ${
+                  className={`flex flex-col items-center gap-0.5 py-2 rounded-xl border-2 text-[10px] font-black transition-all ${
                     form.category===c.key ? `border-blue-400 ${c.light}` : 'border-slate-100 text-slate-400'
                   }`}>
                   <span className="text-base">{c.icon}</span>
@@ -184,13 +184,13 @@ function TaskItem({ task, onUpdate }) {
             </p>
             {(task.client || task.campaign) && (
               <div className="flex gap-1.5 mt-1 flex-wrap">
-                {task.client   && <span className="text-[9px] font-bold bg-blue-950 text-white px-1.5 py-0.5 rounded-full">🏢 {task.client}</span>}
-                {task.campaign && <span className="text-[9px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">📌 {task.campaign}</span>}
+                {task.client   && <span className="text-[10px] font-bold bg-blue-950 text-white px-1.5 py-0.5 rounded-full">🏢 {task.client}</span>}
+                {task.campaign && <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">📌 {task.campaign}</span>}
               </div>
             )}
           </div>
           {task.dueDate && (
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-lg shrink-0 ${overdue?'bg-red-50 text-red-600':'bg-slate-50 text-slate-500'}`}>
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-lg shrink-0 ${overdue?'bg-red-50 text-red-600':'bg-slate-50 text-slate-500'}`}>
               📅 {task.dueDate}
             </span>
           )}
@@ -203,7 +203,7 @@ function TaskItem({ task, onUpdate }) {
           <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg ${st.bg} ${st.text}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`}/>{task.status}
           </span>
-          <span className="text-[9px] text-slate-400 font-semibold">from {task.assignedBy?.userName}</span>
+          <span className="text-[10px] text-slate-400 font-semibold">from {task.assignedBy?.userName}</span>
         </div>
 
         {task.status !== 'Done' ? (

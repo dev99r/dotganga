@@ -13,8 +13,15 @@ const payrollRoutes = require('./routes/payroll');
 const companyRoutes = require('./routes/company');
 const staffRoutes = require('./routes/staff');
 const dailyReportRoutes = require('./routes/dailyReport');
-const taskRoutes        = require('./routes/tasks');
-const leadRoutes        = require('./routes/leads');
+const taskRoutes           = require('./routes/tasks');
+const leadRoutes           = require('./routes/leads');
+const userManagementRoutes = require('./routes/userManagement');
+const clientRoutes         = require('./routes/clients');
+const postRoutes           = require('./routes/posts');
+const metaAdsRoutes        = require('./routes/metaAds');
+const approvalsRoutes      = require('./routes/approvals');
+const mediaRoutes          = require('./routes/media');
+const notificationsRoutes  = require('./routes/notifications');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -55,8 +62,15 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/daily-report', dailyReportRoutes);
-app.use('/api/tasks',       taskRoutes);
-app.use('/api/leads',       leadRoutes);
+app.use('/api/tasks',         taskRoutes);
+app.use('/api/leads',         leadRoutes);
+app.use('/api/users',         userManagementRoutes);
+app.use('/api/clients',       clientRoutes);
+app.use('/api/posts',         postRoutes);
+app.use('/api/meta-ads',      metaAdsRoutes);
+app.use('/api/approvals',     approvalsRoutes);
+app.use('/api/media',         mediaRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running', timestamp: new Date().toISOString() });

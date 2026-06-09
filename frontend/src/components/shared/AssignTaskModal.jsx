@@ -226,7 +226,7 @@ export default function AssignTaskModal({ onClose, onCreated }) {
                       </div>
                       <div className="min-w-0">
                         <p className={`text-xs font-black truncate ${form.assignedToId===p._id?'text-blue-900':'text-slate-800'}`}>{p.name}</p>
-                        <p className="text-[9px] text-slate-400 truncate">{p.designation}</p>
+                        <p className="text-[10px] text-slate-400 truncate">{p.designation}</p>
                       </div>
                       {form.assignedToId===p._id && (
                         <span className="ml-auto text-blue-500 shrink-0">

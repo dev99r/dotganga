@@ -267,7 +267,7 @@ export default function DailyReportForm() {
         {/* Highlights */}
         <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
           <div className="px-4 py-2 bg-emerald-50 border-b border-emerald-100">
-            <p className="text-[11px] font-bold text-emerald-700">🏆 Highlights — What went well?</p>
+            <p className="text-xs font-bold text-emerald-700">🏆 Highlights — What went well?</p>
           </div>
           <textarea value={highlights} onChange={e => setHighlights(e.target.value)} rows={2}
             placeholder="Wins, good feedback, breakthroughs…"
@@ -277,7 +277,7 @@ export default function DailyReportForm() {
         {/* Blockers */}
         <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
           <div className="px-4 py-2 bg-red-50 border-b border-red-100">
-            <p className="text-[11px] font-bold text-red-600">🚧 Blockers & Challenges</p>
+            <p className="text-xs font-bold text-red-600">🚧 Blockers & Challenges</p>
           </div>
           <textarea value={blockers} onChange={e => setBlockers(e.target.value)} rows={2}
             placeholder="Anything blocking your progress…"
@@ -287,7 +287,7 @@ export default function DailyReportForm() {
         {/* Tomorrow's plan */}
         <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
           <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
-            <p className="text-[11px] font-bold text-blue-700">📋 Tomorrow's Plan</p>
+            <p className="text-xs font-bold text-blue-700">📋 Tomorrow's Plan</p>
             <button type="button" onClick={addPlan}
               className="text-[10px] font-black text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg hover:bg-blue-200">+ Add</button>
           </div>

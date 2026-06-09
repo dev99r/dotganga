@@ -12,12 +12,19 @@ const UserSchema = new mongoose.Schema(
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
     },
     password: { type: String, required: [true, 'Password is required'], minlength: 6, select: false },
-    role: { type: String, enum: ['Admin', 'Manager', 'Staff'], default: 'Staff' },
+    role: { type: String, enum: ['Super Admin', 'Admin', 'Manager', 'Staff', 'SMM', 'Client', 'Meta Ads Manager'], default: 'Staff' },
     designation: { type: String, trim: true, default: '' },
     department: { type: String, trim: true, default: '' },
     joinedDate: { type: Date, default: Date.now },
     isActive: { type: Boolean, default: true },
     phone: { type: String, trim: true, default: '' },
+    // For Client role — link to Client document
+    clientRef: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', default: null },
+    // For SMM / Meta Ads Manager — which clients they manage
+    assignedClients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Client' }],
+    // Welcome email / password-reset token
+    resetToken:       { type: String, select: false },
+    resetTokenExpiry: { type: Date,   select: false },
   },
   { timestamps: true }
 );

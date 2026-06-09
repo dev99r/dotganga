@@ -166,7 +166,7 @@ export default function StaffHub() {
                     active ? 'text-blue-900' : 'text-slate-400'
                   }`}>
                   <span className={active ? 'text-blue-900' : 'text-slate-400'}>{tab.icon(active)}</span>
-                  <span className={`text-[9px] font-black ${active ? 'text-blue-900' : 'text-slate-400'}`}>{tab.label}</span>
+                  <span className={`text-[10px] font-black ${active ? 'text-blue-900' : 'text-slate-400'}`}>{tab.label}</span>
                   {active && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-blue-900 rounded-full" />}
                 </button>
               );

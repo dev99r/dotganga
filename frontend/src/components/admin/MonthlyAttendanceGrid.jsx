@@ -58,7 +58,7 @@ function Cell({ record, date }) {
         onMouseEnter={() => setTip(true)}
         onMouseLeave={() => setTip(false)}
       >
-        <span className="text-white text-[9px] font-bold leading-none">{meta.text}</span>
+        <span className="text-white text-[10px] font-bold leading-none">{meta.text}</span>
       </div>
       {tip && (
         <div className="absolute z-50 bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] rounded-lg px-2 py-1.5 whitespace-nowrap shadow-xl pointer-events-none min-w-max">
@@ -192,7 +192,7 @@ export default function MonthlyAttendanceGrid() {
           ].map(c => (
             <div key={c.label} className="bg-white rounded-2xl p-4 border border-slate-100">
               <p className={`text-2xl font-black ${c.color}`}>{c.value}</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">{c.label}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{c.label}</p>
             </div>
           ))}
         </div>
@@ -225,7 +225,7 @@ export default function MonthlyAttendanceGrid() {
                       }`}
                     >
                       <div className={`text-[10px] font-bold ${wkend ? 'text-slate-300' : 'text-slate-500'}`}>{dayNum}</div>
-                      <div className={`text-[9px] ${wkend ? 'text-slate-300' : 'text-slate-400'}`}>{dayName}</div>
+                      <div className={`text-[10px] ${wkend ? 'text-slate-300' : 'text-slate-400'}`}>{dayName}</div>
                     </th>
                   );
                 })}
@@ -247,7 +247,7 @@ export default function MonthlyAttendanceGrid() {
                       <div className={`text-sm font-black ${pct >= 80 ? 'text-emerald-600' : pct >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
                         {pct}%
                       </div>
-                      <div className="text-[9px] text-slate-400 leading-tight">
+                      <div className="text-[10px] text-slate-400 leading-tight">
                         <span className="text-emerald-500">{st.present}P</span>
                         {' · '}
                         <span className="text-amber-500">{st.half}H</span>

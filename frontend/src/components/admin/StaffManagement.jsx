@@ -613,7 +613,7 @@ export default function StaffManagement() {
         ].map(s => (
           <div key={s.label} className={`${s.bg} rounded-2xl border border-slate-100 px-4 py-3 text-center shadow-sm`}>
             <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
-            <p className="text-[11px] text-slate-400 font-semibold mt-0.5">{s.label}</p>
+            <p className="text-xs text-slate-400 font-semibold mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>

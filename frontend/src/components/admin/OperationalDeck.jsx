@@ -89,14 +89,14 @@ function AttendanceRow({ rec, index }) {
           )}
         </div>
         <div className="flex items-center gap-1.5 justify-end">
-          {rec.isLate && <span className="text-[9px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-md">LATE</span>}
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+          {rec.isLate && <span className="text-[10px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-md">LATE</span>}
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
             rec.status === 'Full-Day' ? 'bg-emerald-100 text-emerald-700' :
             rec.status === 'Half-Day' ? 'bg-amber-100 text-amber-700'    :
             'bg-slate-100 text-slate-500'
           }`}>{rec.status}</span>
           {isActive && (
-            <span className="text-[9px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-md">LIVE</span>
+            <span className="text-[10px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-md">LIVE</span>
           )}
         </div>
       </div>
@@ -163,7 +163,7 @@ function PresenceBoard({ allStaff, presentIds, title, empty, color }) {
               style={{ animationDelay: `${i * 30}ms` }}
             >
               <Avatar name={s.name} department={s.department} size="xs" online={presentIds.has(String(s._id))} />
-              <span className="text-[9px] text-slate-400 font-semibold max-w-[36px] text-center truncate leading-tight">
+              <span className="text-[10px] text-slate-400 font-semibold max-w-[36px] text-center truncate leading-tight">
                 {s.name.split(' ')[0]}
               </span>
             </div>

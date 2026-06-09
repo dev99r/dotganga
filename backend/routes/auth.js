@@ -15,7 +15,7 @@ router.post(
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('role').optional().isIn(['Admin', 'Staff']),
+    body('role').optional().isIn(['Super Admin','Admin','Manager','Staff','SMM','Client','Meta Ads Manager']),
   ],
   async (req, res, next) => {
     try {

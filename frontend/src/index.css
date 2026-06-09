@@ -3,17 +3,31 @@
 @tailwind utilities;
 
 @layer base {
-  * { -webkit-tap-highlight-color: transparent; }
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: 'cv11','ss01';
+    -webkit-text-size-adjust: 100%; /* prevent iOS font auto-scaling */
+    text-size-adjust: 100%;
+  }
 
   body {
     @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    line-height: 1.6;
+    /* safe area for iPhone notch / home indicator */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* prettier scrollbars */
   ::-webkit-scrollbar       { @apply w-1 h-1; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-slate-200 rounded-full hover:bg-slate-300; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-200 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-300; }
+
+  /* number inputs — no spinners */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 }
 
 @layer components {

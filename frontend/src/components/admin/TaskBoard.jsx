@@ -76,7 +76,7 @@ function TaskCard({ task, onStatus, onDelete }) {
             {cat.icon} {task.category}
           </span>
           <div className="flex items-center gap-1.5 ml-auto">
-            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${pCfg.badge}`}>
+            <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${pCfg.badge}`}>
               {task.priority}
             </span>
             <button onClick={e=>{e.stopPropagation();del()}}
@@ -96,8 +96,8 @@ function TaskCard({ task, onStatus, onDelete }) {
         {/* Client/Campaign pills */}
         {(task.client || task.campaign) && (
           <div className="flex gap-1 mb-2 flex-wrap">
-            {task.client   && <span className="text-[9px] font-black bg-blue-950 text-white px-2 py-0.5 rounded-full">🏢 {task.client}</span>}
-            {task.campaign && <span className="text-[9px] font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">📌 {task.campaign}</span>}
+            {task.client   && <span className="text-[10px] font-black bg-blue-950 text-white px-2 py-0.5 rounded-full">🏢 {task.client}</span>}
+            {task.campaign && <span className="text-[10px] font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">📌 {task.campaign}</span>}
           </div>
         )}
 
@@ -111,12 +111,12 @@ function TaskCard({ task, onStatus, onDelete }) {
 
         {/* Assignee + Due */}
         <div className="flex items-center gap-2">
-          <div className={`w-6 h-6 rounded-lg ${dc(task.department)} flex items-center justify-center text-white text-[9px] font-black shrink-0`}>
+          <div className={`w-6 h-6 rounded-lg ${dc(task.department)} flex items-center justify-center text-white text-[10px] font-black shrink-0`}>
             {ini(task.assignedTo?.userName)}
           </div>
           <p className="text-[10px] text-slate-500 font-semibold flex-1 truncate">{task.assignedTo?.userName}</p>
           {task.dueDate && (
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-lg ${overdue?'bg-red-50 text-red-600':'bg-slate-50 text-slate-500'}`}>
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-lg ${overdue?'bg-red-50 text-red-600':'bg-slate-50 text-slate-500'}`}>
               {overdue ? '⚠' : '📅'} {task.dueDate}
             </span>
           )}
@@ -126,18 +126,18 @@ function TaskCard({ task, onStatus, onDelete }) {
         <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-slate-100" onClick={e=>e.stopPropagation()}>
           {idx > 0 && (
             <button onClick={() => move(STATUS_ORDER[idx-1])} disabled={busy}
-              className="text-[9px] font-black px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
+              className="text-[10px] font-black px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
               ← Back
             </button>
           )}
           {idx < 3 && (
             <button onClick={() => move(STATUS_ORDER[idx+1])} disabled={busy}
-              className={`flex-1 text-[9px] font-black py-1.5 rounded-xl bg-gradient-to-r ${cat.grad} text-white transition-all hover:opacity-90 active:scale-95`}>
+              className={`flex-1 text-[10px] font-black py-1.5 rounded-xl bg-gradient-to-r ${cat.grad} text-white transition-all hover:opacity-90 active:scale-95`}>
               {busy ? '…' : `→ ${STATUS_ORDER[idx+1]}`}
             </button>
           )}
           {idx === 3 && (
-            <div className="flex-1 text-center text-[9px] font-black text-emerald-600">
+            <div className="flex-1 text-center text-[10px] font-black text-emerald-600">
               ✅ Completed
             </div>
           )}

@@ -162,11 +162,11 @@ function ReportCard({ report, onUpdate }) {
                   const tc = getTask(t.status);
                   return (
                     <div key={i} className={`flex items-start gap-2 rounded-xl px-3 py-2 border ${tc.bg} ${tc.border}`}>
-                      <span className={`w-4 h-4 rounded-md ${tc.dot} flex items-center justify-center text-white text-[9px] font-black shrink-0 mt-0.5`}>
+                      <span className={`w-4 h-4 rounded-md ${tc.dot} flex items-center justify-center text-white text-[10px] font-black shrink-0 mt-0.5`}>
                         {tc.icon}
                       </span>
                       <span className={`text-sm flex-1 leading-snug ${tc.text}`}>{t.task}</span>
-                      <span className="text-[9px] font-bold opacity-50 shrink-0 mt-0.5">
+                      <span className="text-[10px] font-bold opacity-50 shrink-0 mt-0.5">
                         {t.status === 'In Progress' ? 'WIP' : t.status}
                       </span>
                     </div>
@@ -392,7 +392,7 @@ export default function DailyReportsView() {
             <div key={c.label} className={`${c.bg} rounded-2xl border border-slate-100 p-3 text-center shadow-sm`}>
               <div className="text-lg mb-0.5">{c.icon}</div>
               <p className={`text-2xl font-black tabular-nums ${c.num}`}>{c.value}</p>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">{c.label}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">{c.label}</p>
             </div>
           ))}
         </div>

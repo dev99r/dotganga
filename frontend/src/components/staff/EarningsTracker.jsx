@@ -97,7 +97,7 @@ export default function EarningsTracker() {
 
             <div className="relative flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-blue-300 text-[11px] font-bold uppercase tracking-widest">
+                <p className="text-blue-300 text-xs font-bold uppercase tracking-widest">
                   {isCurrentMonth ? 'Projected Take-Home' : 'Net Payout'}
                 </p>
                 <p className="text-4xl font-black mt-1 tabular-nums">{fmt(preview.finalNetPayout)}</p>
@@ -126,7 +126,7 @@ export default function EarningsTracker() {
                 <Ring pct={pct} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-xl font-black tabular-nums">{pct}%</span>
-                  <span className="text-[9px] text-blue-300 font-bold">PAYABLE</span>
+                  <span className="text-[10px] text-blue-300 font-bold">PAYABLE</span>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function EarningsTracker() {
           {preview.calculatedDeductions > 0 && (
             <div className="rounded-2xl bg-red-50 border border-red-100 p-4 flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold text-red-500 uppercase tracking-wider">Deductions</p>
+                <p className="text-xs font-bold text-red-500 uppercase tracking-wider">Deductions</p>
                 <p className="text-2xl font-black text-red-700 mt-0.5">-{fmt(preview.calculatedDeductions)}</p>
                 <p className="text-xs text-red-500 mt-1">Daily rate: {fmt(preview.dailyWageRate)}</p>
               </div>

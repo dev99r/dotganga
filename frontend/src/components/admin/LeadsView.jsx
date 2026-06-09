@@ -369,7 +369,7 @@ function LeadCard({ lead, onSelect, onStatusChange }) {
               {lead.company && <p className="text-[10px] text-slate-400 truncate">🏢 {lead.company}</p>}
             </div>
           </div>
-          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${pCfg.bg}`}>{pCfg.label}</span>
+          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${pCfg.bg}`}>{pCfg.label}</span>
         </div>
 
         {/* Phone + quick actions */}
@@ -397,11 +397,11 @@ function LeadCard({ lead, onSelect, onStatusChange }) {
 
         {/* Source + service */}
         <div className="flex items-center gap-1.5 flex-wrap mb-2.5">
-          <span className="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
             {SOURCE_ICONS[lead.source]} {lead.source}
           </span>
-          {lead.service && <span className="text-[9px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{lead.service}</span>}
-          {lead.budget  && <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">₹{lead.budget}</span>}
+          {lead.service && <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{lead.service}</span>}
+          {lead.budget  && <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">₹{lead.budget}</span>}
         </div>
 
         {/* Follow-up */}
@@ -417,7 +417,7 @@ function LeadCard({ lead, onSelect, onStatusChange }) {
           <span className="text-[10px] text-slate-400 font-semibold">
             {lead.assignedTo?.userName ? `👤 ${lead.assignedTo.userName.split(' ')[0]}` : 'Unassigned'}
           </span>
-          {lead.notes?.length > 0 && <span className="text-[9px] text-slate-400 font-bold">💬 {lead.notes.length}</span>}
+          {lead.notes?.length > 0 && <span className="text-[10px] text-slate-400 font-bold">💬 {lead.notes.length}</span>}
         </div>
       </div>
     </div>
@@ -601,14 +601,14 @@ function LeadDrawer({ lead, staff, onClose, onUpdate, onDelete }) {
                 { label:'Follow Up',value: lead.followUpDate || '—' },
               ].map(item => (
                 <div key={item.label}>
-                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider">{item.label}</p>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{item.label}</p>
                   <p className="font-semibold text-slate-800 text-sm mt-0.5 truncate">{item.value}</p>
                 </div>
               ))}
             </div>
             {(lead.adCampaign || lead.adSet) && (
               <div className="mt-3 bg-violet-50 border border-violet-100 rounded-xl px-3 py-2.5">
-                <p className="text-[9px] font-black text-violet-500 uppercase tracking-wider mb-1.5">📢 Meta Ads</p>
+                <p className="text-[10px] font-black text-violet-500 uppercase tracking-wider mb-1.5">📢 Meta Ads</p>
                 {lead.adCampaign && <p className="text-xs text-slate-700"><b>Campaign:</b> {lead.adCampaign}</p>}
                 {lead.adSet      && <p className="text-xs text-slate-700"><b>Ad Set:</b> {lead.adSet}</p>}
               </div>
