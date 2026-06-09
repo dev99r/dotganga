@@ -51,8 +51,8 @@ router.get('/:id', protect, async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// POST /api/posts — create post (agency staff)
-router.post('/', protect, agencyStaff, async (req, res) => {
+// POST /api/posts — create post (all team members including Staff)
+router.post('/', protect, async (req, res) => {
   try {
     const { clientId, platforms, caption, hashtags, mediaUrls, videoUrls, scheduledDate, category, notes, aiGenerated, script } = req.body;
     if (!clientId || !platforms?.length) {
@@ -97,8 +97,8 @@ router.post('/', protect, agencyStaff, async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// PUT /api/posts/:id — update post
-router.put('/:id', protect, agencyStaff, async (req, res) => {
+// PUT /api/posts/:id — update post (all team members)
+router.put('/:id', protect, async (req, res) => {
   try {
     const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!post) return res.status(404).json({ success: false, message: 'Post not found.' });

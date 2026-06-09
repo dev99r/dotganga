@@ -7,6 +7,7 @@ import DailyReportForm from '../components/staff/DailyReportForm';
 import AttendanceHistory from '../components/staff/AttendanceHistory';
 import MyTasks from '../components/staff/MyTasks';
 import LeadsView from '../components/admin/LeadsView';
+import SocialMediaManager from '../components/admin/SocialMediaManager';
 import api from '../utils/api';
 
 const TABS = [
@@ -63,6 +64,14 @@ const TABS = [
     icon: (a) => (
       <svg className={`w-5 h-5`} fill={a?'currentColor':'none'} stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'social', label: 'Social',
+    icon: (a) => (
+      <svg className={`w-5 h-5`} fill={a?'currentColor':'none'} stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
       </svg>
     ),
   },
@@ -193,9 +202,13 @@ export default function StaffHub() {
         </div>
 
         {/* Content area */}
-        <main className={`flex-1 ${activeTab === 'leads' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
+        <main className={`flex-1 ${activeTab === 'leads' || activeTab === 'social' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
           {activeTab === 'leads' ? (
             <LeadsView />
+          ) : activeTab === 'social' ? (
+            <div className="flex-1 overflow-hidden flex flex-col p-4 lg:p-6">
+              <SocialMediaManager />
+            </div>
           ) : (
             <div className="p-4 lg:p-8 max-w-5xl mx-auto w-full">
               {activeTab === 'home'     && <CheckInPanel company={company} />}
