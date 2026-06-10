@@ -646,9 +646,207 @@ function AllClientsOverview({ clients, posts, month, onClientSelect }) {
   );
 }
 
-// ─── ClientSidebar ─────────────────────────────────────────────────────────────
+// ─── AddClientModal ───────────────────────────────────────────────────────────
 
-function ClientSidebar({ clients, posts, month, selectedId, onSelect, onClose }) {
+const ADD_INDUSTRIES = [
+  'Food & Beverage','Real Estate','Fashion & Apparel','Health & Fitness',
+  'Travel & Tourism','Technology & IT','Healthcare','Events & Wedding',
+  'Handicrafts & Art','Education','E-commerce','Retail','Other',
+];
+const ADD_SERVICES   = ['Social Media','Meta Ads','Video Editing','Graphic Design','Website','SEO','Shoot','Branding','Content Writing','Other'];
+const ADD_PLATFORMS  = ['Instagram','Facebook','LinkedIn','Twitter','YouTube','WhatsApp'];
+
+function AddClientModal({ onClose, onSaved }) {
+  const [step,   setStep]   = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [form,   setForm]   = useState({
+    businessName:'', contactName:'', email:'', phone:'', industry:'', notes:'',
+    services:[], primaryPlatforms:['Instagram'],
+    contentTargets:{ Reel:6, Carousel:8, Story:12, Organic:8, 'Ad Creative':4 },
+    monthlyBudget:'',
+  });
+
+  const set  = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const setT = (k, delta) => setForm(f => ({ ...f, contentTargets:{ ...f.contentTargets, [k]: Math.max(0, (f.contentTargets[k]||0)+delta) } }));
+  const toggleService  = s => set('services',        form.services.includes(s)        ? form.services.filter(x=>x!==s)        : [...form.services, s]);
+  const togglePlatform = p => set('primaryPlatforms', form.primaryPlatforms.includes(p)? form.primaryPlatforms.filter(x=>x!==p): [...form.primaryPlatforms, p]);
+  const canNext = () => step===1 ? (form.businessName.trim() && form.contactName.trim() && form.email.trim()) : true;
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await api.post('/clients', { ...form, monthlyBudget: Number(form.monthlyBudget)||0 });
+      toast.success(`🎉 ${form.businessName} added! Opening calendar…`);
+      onSaved(res.data.client);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to add client.');
+    } finally { setSaving(false); }
+  };
+
+  const IC = 'w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all';
+  const LB = 'text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block';
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5" onClick={onClose}>
+      <div className="bg-white rounded-3xl w-full max-w-lg max-h-[95vh] overflow-hidden flex flex-col shadow-2xl shadow-black/40" onClick={e=>e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-6 py-5 relative overflow-hidden shrink-0">
+          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full"/>
+          <div className="absolute -bottom-4 right-16 w-20 h-20 bg-white/10 rounded-full"/>
+          <div className="relative flex items-center justify-between">
+            <div>
+              <h2 className="text-white font-black text-xl">✨ Add New Client</h2>
+              <p className="text-blue-200 text-sm mt-0.5">
+                {step === 1 ? 'Step 1 of 2 — Brand & Contact Info' : 'Step 2 of 2 — Services & Content Plan'}
+              </p>
+            </div>
+            <button onClick={onClose} className="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-white font-black transition-all active:scale-95">✕</button>
+          </div>
+          <div className="relative flex gap-1.5 mt-4">
+            {[1,2].map(s => (
+              <div key={s} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${s <= step ? 'bg-white' : 'bg-white/30'}`}/>
+            ))}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {step === 1 && (
+            <>
+              <div>
+                <label className={LB}>Business Name <span className="text-red-400">*</span></label>
+                <input value={form.businessName} onChange={e=>set('businessName',e.target.value)}
+                  placeholder="e.g. Sharma Bakery" autoFocus className={IC}/>
+              </div>
+              <div>
+                <label className={LB}>Contact Person <span className="text-red-400">*</span></label>
+                <input value={form.contactName} onChange={e=>set('contactName',e.target.value)}
+                  placeholder="Owner / point of contact name" className={IC}/>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={LB}>Email <span className="text-red-400">*</span></label>
+                  <input type="email" value={form.email} onChange={e=>set('email',e.target.value)}
+                    placeholder="client@email.com" className={IC}/>
+                </div>
+                <div>
+                  <label className={LB}>Phone</label>
+                  <input value={form.phone} onChange={e=>set('phone',e.target.value)}
+                    placeholder="9876543210" className={IC}/>
+                </div>
+              </div>
+              <div>
+                <label className={LB}>Industry</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {ADD_INDUSTRIES.map(ind => (
+                    <button key={ind} type="button" onClick={()=>set('industry',ind)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-all active:scale-95 ${form.industry===ind ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>
+                      {ind}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={LB}>Notes (optional)</label>
+                <textarea value={form.notes} onChange={e=>set('notes',e.target.value)}
+                  placeholder="Key info about this client, special requests..." rows={2}
+                  className={`${IC} resize-none`}/>
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <div>
+                <label className={LB}>Services</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {ADD_SERVICES.map(s => (
+                    <button key={s} type="button" onClick={()=>toggleService(s)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-all active:scale-95 ${form.services.includes(s) ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className={LB}>Active Platforms</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {ADD_PLATFORMS.map(p => (
+                    <button key={p} type="button" onClick={()=>togglePlatform(p)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-all active:scale-95 ${form.primaryPlatforms.includes(p) ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className={LB}>Monthly Content Targets</label>
+                <div className="space-y-2">
+                  {[
+                    { key:'Reel',         icon:'🎬', col:'bg-violet-500' },
+                    { key:'Carousel',     icon:'🖼️', col:'bg-blue-500'   },
+                    { key:'Story',        icon:'📱', col:'bg-pink-500'   },
+                    { key:'Organic',      icon:'🌿', col:'bg-emerald-500'},
+                    { key:'Ad Creative',  icon:'🎯', col:'bg-amber-500'  },
+                  ].map(({ key, icon, col }) => (
+                    <div key={key} className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-2.5">
+                      <div className={`w-7 h-7 ${col} rounded-lg flex items-center justify-center text-white text-sm shrink-0`}>{icon}</div>
+                      <span className="text-xs font-black text-slate-700 flex-1">{key}</span>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={()=>setT(key,-1)}
+                          className="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 font-black text-slate-600 text-sm transition-all active:scale-90">−</button>
+                        <span className="w-7 text-center font-black text-slate-800 text-sm">{form.contentTargets[key]||0}</span>
+                        <button type="button" onClick={()=>setT(key,+1)}
+                          className="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 font-black text-slate-600 text-sm transition-all active:scale-90">+</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className={LB}>Monthly Budget (₹)</label>
+                <input type="number" value={form.monthlyBudget} onChange={e=>set('monthlyBudget',e.target.value)}
+                  placeholder="e.g. 25000" className={IC}/>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center gap-3 bg-white shrink-0">
+          {step > 1 && (
+            <button onClick={()=>setStep(s=>s-1)}
+              className="px-5 py-2.5 rounded-2xl bg-slate-100 text-slate-700 font-black text-sm hover:bg-slate-200 transition-all active:scale-95">
+              ← Back
+            </button>
+          )}
+          <div className="flex-1"/>
+          {step < 2 ? (
+            <button onClick={()=>setStep(s=>s+1)} disabled={!canNext()}
+              className="px-6 py-2.5 rounded-2xl bg-blue-600 text-white font-black text-sm hover:bg-blue-700 transition-all disabled:opacity-40 active:scale-95 shadow-lg shadow-blue-500/30">
+              Next →
+            </button>
+          ) : (
+            <button onClick={handleSave} disabled={saving}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-sm hover:opacity-90 transition-all disabled:opacity-40 active:scale-95 shadow-lg shadow-blue-500/30">
+              {saving
+                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>Saving…</>
+                : '🎉 Create & Open Calendar'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ClientSidebar ────────────────────────────────────────────────────────────
+
+function ClientSidebar({ clients, posts, month, selectedId, onSelect, onClose, onAddClient }) {
   const [search, setSearch] = useState('');
   const now = new Date();
 
@@ -662,10 +860,15 @@ function ClientSidebar({ clients, posts, month, selectedId, onSelect, onClose })
       {/* sidebar header */}
       <div className="p-4 border-b border-slate-100 shrink-0">
         <div className="flex items-center justify-between mb-3">
-          <p className="font-black text-slate-800 text-sm">Clients</p>
-          {onClose && (
-            <button onClick={onClose} className="lg:hidden w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-black text-slate-500 text-xs">✕</button>
-          )}
+          <p className="font-black text-slate-800 text-sm">Clients <span className="text-slate-400 font-normal">({clients.length})</span></p>
+          <div className="flex items-center gap-1.5">
+            <button onClick={onAddClient}
+              title="Add New Client"
+              className="w-7 h-7 rounded-lg bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white font-black text-base transition-all active:scale-90 shadow-sm shadow-blue-500/30">+</button>
+            {onClose && (
+              <button onClick={onClose} className="lg:hidden w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-black text-slate-500 text-xs">✕</button>
+            )}
+          </div>
         </div>
         <div className="relative">
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
@@ -721,10 +924,23 @@ function ClientSidebar({ clients, posts, month, selectedId, onSelect, onClose })
           );
         })}
         {filtered.length === 0 && (
-          <div className="text-center py-6">
+          <div className="text-center py-6 space-y-3">
             <p className="text-slate-400 text-xs font-bold">No clients found.</p>
+            <button onClick={onAddClient}
+              className="text-xs font-black text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all active:scale-95">
+              + Add First Client
+            </button>
           </div>
         )}
+
+        {/* sticky add button at bottom of list */}
+        <div className="sticky bottom-0 pt-2 pb-1">
+          <button onClick={onAddClient}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-blue-500/20">
+            <span className="text-base leading-none">+</span>
+            <span>Add New Client</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -740,11 +956,12 @@ export default function ClientCalendarMaster() {
   const [selectedId,  setSelectedId]  = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [createModal, setCreateModal] = useState(false);
-  const [editPost,    setEditPost]    = useState(null);
-  const [detailPost,  setDetailPost]  = useState(null);
-  const [dayPanel,    setDayPanel]    = useState(null);
-  const [preDate,     setPreDate]     = useState(null);
+  const [createModal,   setCreateModal]   = useState(false);
+  const [editPost,      setEditPost]      = useState(null);
+  const [detailPost,    setDetailPost]    = useState(null);
+  const [dayPanel,      setDayPanel]      = useState(null);
+  const [preDate,       setPreDate]       = useState(null);
+  const [showAddClient, setShowAddClient] = useState(false);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -774,6 +991,19 @@ export default function ClientCalendarMaster() {
     selectedId ? monthPosts.filter(p => (p.clientId?._id || p.clientId) === selectedId) : monthPosts,
     [monthPosts, selectedId]
   );
+
+  const handleClientAdded = useCallback(async (newClient) => {
+    setShowAddClient(false);
+    // Optimistic: add to top of list and immediately open their calendar
+    setClients(prev => [newClient, ...prev]);
+    setSelectedId(newClient._id);
+    setSidebarOpen(false);
+    // Background refetch to sync with server
+    try {
+      const cRes = await api.get('/clients');
+      setClients(cRes.data.clients || cRes.data || []);
+    } catch {}
+  }, []);
 
   const handleDayClick = day => {
     setPreDate(day);
@@ -907,6 +1137,7 @@ export default function ClientCalendarMaster() {
             selectedId={selectedId}
             onSelect={id => { setSelectedId(id); setSidebarOpen(false); }}
             onClose={() => setSidebarOpen(false)}
+            onAddClient={() => setShowAddClient(true)}
           />
         </div>
 
@@ -996,6 +1227,13 @@ export default function ClientCalendarMaster() {
       </div>
 
       {/* ── MODALS ── */}
+      {showAddClient && (
+        <AddClientModal
+          onClose={() => setShowAddClient(false)}
+          onSaved={handleClientAdded}
+        />
+      )}
+
       {(createModal || editPost) && (
         <PostModal
           post={editPost || null}

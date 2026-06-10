@@ -60,8 +60,8 @@ router.get('/:id', protect, agencyStaff, async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// POST /api/clients — create client (Admin/Manager)
-router.post('/', protect, managerOrAdmin, async (req, res) => {
+// POST /api/clients — create client (all agency staff)
+router.post('/', protect, agencyStaff, async (req, res) => {
   try {
     const {
       businessName, contactName, email, phone, website, industry,
