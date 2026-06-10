@@ -24,6 +24,8 @@ const mediaRoutes          = require('./routes/media');
 const notificationsRoutes  = require('./routes/notifications');
 const whatsappRoutes       = require('./routes/whatsapp');
 const seedNowRoutes        = require('./routes/seedNow');
+const credentialsRoutes    = require('./routes/credentials');
+const aiRoutes             = require('./routes/ai');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -75,6 +77,8 @@ app.use('/api/media',         mediaRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/whatsapp',     whatsappRoutes);
 app.use('/api/seed-now',    seedNowRoutes);
+app.use('/api/credentials', credentialsRoutes);
+app.use('/api/ai',          aiRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running', timestamp: new Date().toISOString() });

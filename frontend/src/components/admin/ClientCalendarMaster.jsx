@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import ClientCredentialsVault from './ClientCredentialsVault';
 import {
   format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval,
   isSameDay, isToday, addMonths, subMonths, getDay,
@@ -63,7 +64,26 @@ function PostModal({ post, clients, preDate, preClient, onClose, onSave }) {
         : format(new Date(), "yyyy-MM-dd'T'10:00"),
     status: post?.status || 'Scheduled',
   });
-  const [saving, setSaving] = useState(false);
+  const [saving,    setSaving]    = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const selectedClient = clients.find(c => c._id === (form.clientId?._id || form.clientId));
+
+  const generateAI = async () => {
+    if (!form.clientId) { toast.error('Select a client first.'); return; }
+    setAiLoading(true);
+    try {
+      const r = await api.post('/ai/caption', {
+        category:     form.category,
+        industry:     selectedClient?.industry || '',
+        businessName: selectedClient?.businessName || '',
+        platform:     form.platforms[0] || 'Instagram',
+      });
+      setForm(f => ({ ...f, caption: r.data.caption || f.caption, hashtags: r.data.hashtags || f.hashtags }));
+      toast.success(r.data.source === 'ai' ? '✨ AI caption generated!' : '✨ Caption generated!');
+    } catch { toast.error('AI unavailable — try again.'); }
+    finally { setAiLoading(false); }
+  };
 
   const togglePlatform = p =>
     setForm(f => ({ ...f, platforms: f.platforms.includes(p) ? f.platforms.filter(x => x !== p) : [...f.platforms, p] }));
@@ -153,10 +173,18 @@ function PostModal({ post, clients, preDate, preClient, onClose, onSave }) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-black text-slate-500 uppercase tracking-wide">Caption *</label>
-              <span className={`text-xs font-bold ${form.caption.length > 2000 ? 'text-red-500' : 'text-slate-400'}`}>{form.caption.length}/2200</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-bold ${form.caption.length > 2000 ? 'text-red-500' : 'text-slate-400'}`}>{form.caption.length}/2200</span>
+                <button type="button" onClick={generateAI} disabled={aiLoading}
+                  className="flex items-center gap-1.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:opacity-90 text-white font-black text-[10px] px-3 py-1.5 rounded-lg transition-all active:scale-95 disabled:opacity-60 shadow-md shadow-purple-500/30">
+                  {aiLoading
+                    ? <><div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"/>Generating…</>
+                    : <>✨ AI Write</>}
+                </button>
+              </div>
             </div>
             <textarea value={form.caption} onChange={e => setForm(f => ({ ...f, caption: e.target.value }))}
-              placeholder="Write the caption…" rows={5}
+              placeholder="Write the caption… or click ✨ AI Write to generate one!" rows={5}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-slate-300" />
           </div>
 
@@ -1213,6 +1241,12 @@ export default function ClientCalendarMaster() {
                   </div>
                 </div>
               )}
+              {/* ── CREDENTIALS VAULT ── */}
+              <ClientCredentialsVault
+                clientId={selectedClient._id}
+                clientName={selectedClient.businessName}
+              />
+
             </div>
           ) : (
             // ── ALL CLIENTS MASTER OVERVIEW ──

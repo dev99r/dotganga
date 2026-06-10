@@ -4,8 +4,10 @@ const { body, validationResult } = require('express-validator');
 const Attendance = require('../models/Attendance');
 const Company = require('../models/Company');
 const Leave = require('../models/Leave');
+const User = require('../models/User');
 const { protect, adminOnly } = require('../middleware/auth');
 const { isWithinGeofence } = require('../utils/haversine');
+const { notifyUsers } = require('../utils/whatsapp');
 
 function getISTDateStr() {
   const now = new Date();
@@ -60,6 +62,18 @@ router.post('/checkin', protect, async (req, res, next) => {
       isLate,
       remarks,
     });
+
+    // WhatsApp alert to all admins & managers
+    const now    = new Date();
+    const istNow = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+    const timeStr = istNow.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+    const dateStr = istNow.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+    const lateTag = isLate ? (status === 'Half-Day' ? ' ⚠️ *LATE (Half-Day)*' : ' 🕐 *Late (within grace)*') : ' ✅ On Time';
+
+    const bosses = await User.find({ role: { $in: ['Admin','Super Admin','Manager'] }, isActive: true }).select('whatsappNumber name').limit(5);
+    notifyUsers(bosses,
+      `👋 *Employee Check-In Alert*\n\n*${req.user.name}* just signed in${lateTag}\n\n🕒 Time: ${timeStr}\n📅 Date: ${dateStr}\n💼 Dept: ${req.user.department || 'N/A'}\n\nDotGanga Attendance System`
+    ).catch(() => {});
 
     res.status(201).json({
       success:  true,
