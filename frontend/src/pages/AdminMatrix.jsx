@@ -15,9 +15,11 @@ import ClientCalendarMaster  from '../components/admin/ClientCalendarMaster';
 import MetaAdsView           from '../components/admin/MetaAdsView';
 import ApprovalsView         from '../components/admin/ApprovalsView';
 import MediaLibraryView      from '../components/admin/MediaLibraryView';
+import TodayCommandCenter   from '../components/admin/TodayCommandCenter';
 import NotificationsBell     from '../components/shared/NotificationsBell';
 
 const NAV_FULL = [
+  { id:'today',      label:"Today's Hub",   short:'Today',   icon:'M13 10V3L4 14h7v7l9-11h-7z', badge:'LIVE', group:'agency' },
   { id:'dashboard',  label:'Dashboard',     short:'Home',    icon:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', group:'hr' },
   { id:'attendance', label:'30-Day Grid',   short:'Grid',    icon:'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', group:'hr' },
   { id:'staff',      label:'Staff',         short:'Staff',   icon:'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', group:'hr' },
@@ -31,6 +33,7 @@ const NAV_FULL = [
   { id:'metaads',    label:'Meta Ads',      short:'Ads',     icon:'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', badge:'NEW', group:'agency' },
   { id:'approvals',  label:'Approvals',     short:'OK',      icon:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', badge:'NEW', group:'agency' },
   { id:'media',      label:'Media Library', short:'Media',   icon:'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z', badge:'NEW', group:'agency' },
+  { id:'whatsapp',   label:'WhatsApp',      short:'WA',      icon:'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', badge:'NEW', group:'agency' },
   { id:'users',      label:'Users',         short:'Users',   icon:'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', group:'admin' },
   { id:'settings',   label:'Settings',      short:'Config',  icon:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z', group:'admin' },
 ];
@@ -38,36 +41,37 @@ const NAV_FULL = [
 const ROLE_NAV = {
   'Super Admin': NAV_FULL.map(n => n.id),
   'Admin':       NAV_FULL.map(n => n.id),
-  'Manager':     ['dashboard','attendance','staff','reports','tasks','leads','clients','social','calmaster','approvals','media'],
-  'SMM':         ['social','calmaster','approvals','media','clients'],
-  'Meta Ads Manager': ['metaads','clients','calmaster'],
+  'Manager':     ['today','dashboard','attendance','staff','reports','tasks','leads','clients','social','calmaster','approvals','media','whatsapp'],
+  'SMM':         ['today','social','calmaster','approvals','media','clients','whatsapp'],
+  'Meta Ads Manager': ['today','metaads','clients','calmaster'],
 };
 
 // Bottom-bar quick-access tabs per role (max 4; "More" is always 5th)
 const QUICK_TABS = {
-  'Super Admin':       ['dashboard','calmaster','clients','leads'],
-  'Admin':             ['dashboard','calmaster','clients','leads'],
-  'Manager':           ['dashboard','calmaster','reports','tasks'],
-  'SMM':               ['calmaster','social','approvals','media'],
-  'Meta Ads Manager':  ['calmaster','metaads','clients'],
+  'Super Admin':       ['today','calmaster','clients','whatsapp'],
+  'Admin':             ['today','calmaster','clients','whatsapp'],
+  'Manager':           ['today','calmaster','reports','tasks'],
+  'SMM':               ['today','social','approvals','calmaster'],
+  'Meta Ads Manager':  ['today','calmaster','metaads','clients'],
 };
 
 const TITLES = {
-  dashboard:'Operational Dashboard', attendance:'30-Day Attendance Grid', staff:'Staff Management',
+  today:"Today's Hub", dashboard:'Operational Dashboard', attendance:'30-Day Attendance Grid', staff:'Staff Management',
   payroll:'Payroll Matrix', reports:'Daily Reports', tasks:'Task Board',
   leads:'Leads CRM', clients:'Clients', social:'Social Media Manager',
   calmaster:'Client Calendars Master',
   metaads:'Meta Ads', approvals:'Approvals', media:'Media Library',
+  whatsapp:'WhatsApp Campaigns',
   users:'User Management', settings:'Office Configuration',
 };
 
 const GROUP_LABELS = { hr:'HR & Attendance', agency:'Agency', admin:'Admin' };
 const GROUP_ORDER  = ['hr','agency','admin'];
-const BADGE_COLOR  = { CRM:'bg-emerald-500', NEW:'bg-blue-500' };
+const BADGE_COLOR  = { CRM:'bg-emerald-500', NEW:'bg-blue-500', LIVE:'bg-rose-500' };
 
 export default function AdminMatrix() {
   const { user, logout } = useAuth();
-  const [activeNav,   setActiveNav]   = useState('dashboard');
+  const [activeNav,   setActiveNav]   = useState('today');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const allowed     = ROLE_NAV[user?.role] || ROLE_NAV['Manager'];
@@ -75,7 +79,7 @@ export default function AdminMatrix() {
   const quickTabIds = QUICK_TABS[user?.role] || QUICK_TABS['Manager'];
   const quickTabs   = quickTabIds.map(id => NAV_FULL.find(n => n.id === id)).filter(Boolean);
   const initials    = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2) || 'A';
-  const fullHeight  = ['tasks','leads','social','calmaster','approvals','media'].includes(activeNav);
+  const fullHeight  = ['tasks','leads','social','calmaster','approvals','media','today','whatsapp'].includes(activeNav);
 
   const grouped = GROUP_ORDER
     .map(g => ({ group: g, items: visibleNav.filter(n => n.group === g) }))
@@ -191,12 +195,13 @@ export default function AdminMatrix() {
             ? 'overflow-hidden flex flex-col'
             : 'overflow-y-auto p-4 lg:p-8'
         }`}>
-          {activeNav === 'tasks'     ? <TaskBoard />            :
-           activeNav === 'leads'     ? <LeadsView />            :
-           activeNav === 'social'     ? <SocialMediaManager />     :
+          {activeNav === 'today'     ? <TodayCommandCenter />   :
+           activeNav === 'tasks'     ? <TaskBoard />             :
+           activeNav === 'leads'     ? <LeadsView />             :
+           activeNav === 'social'    ? <SocialMediaManager />    :
            activeNav === 'calmaster' ? <ClientCalendarMaster />  :
-           activeNav === 'approvals' ? <ApprovalsView />          :
-           activeNav === 'media'     ? <MediaLibraryView />     :
+           activeNav === 'approvals' ? <ApprovalsView />         :
+           activeNav === 'media'     ? <MediaLibraryView />      :
            (
             <div className="max-w-6xl mx-auto">
               {activeNav === 'dashboard'  && <OperationalDeck />}

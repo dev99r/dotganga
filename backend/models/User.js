@@ -17,7 +17,8 @@ const UserSchema = new mongoose.Schema(
     department: { type: String, trim: true, default: '' },
     joinedDate: { type: Date, default: Date.now },
     isActive: { type: Boolean, default: true },
-    phone: { type: String, trim: true, default: '' },
+    phone:          { type: String, trim: true, default: '' },
+    whatsappNumber: { type: String, trim: true, default: '' },
     // For Client role — link to Client document
     clientRef: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', default: null },
     // For SMM / Meta Ads Manager — which clients they manage

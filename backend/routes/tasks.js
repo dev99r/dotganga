@@ -1,7 +1,9 @@
 const express = require('express');
 const router  = express.Router();
 const Task    = require('../models/Task');
+const User    = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { notifyUsers } = require('../utils/whatsapp');
 
 // GET /api/tasks  — all tasks visible to this user
 router.get('/', protect, async (req, res) => {
@@ -41,6 +43,18 @@ router.post('/', protect, async (req, res) => {
       client:   client    || '',
       campaign: campaign  || '',
     });
+
+    // WhatsApp notification to assignee
+    if (assignedToId) {
+      const assignee = await User.findById(assignedToId).select('whatsappNumber name');
+      if (assignee) {
+        const due = dueDate ? ` (Due: ${dueDate})` : '';
+        notifyUsers(assignee,
+          `🔔 *DotGanga Task Alert*\n\nHi ${assignee.name}, you have a new task assigned by *${req.user.name}*:\n\n📌 *${title.trim()}*${description ? '\n' + description.slice(0, 100) : ''}${due}\n\nPriority: ${priority || 'Normal'} | Client: ${client || 'General'}\n\nLogin to check details: https://dotganga.in`
+        ).catch(() => {});
+      }
+    }
+
     res.status(201).json({ success: true, task });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });

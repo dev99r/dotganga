@@ -4,7 +4,9 @@ const Post     = require('../models/Post');
 const Approval = require('../models/Approval');
 const Notification = require('../models/Notification');
 const Client   = require('../models/Client');
+const User     = require('../models/User');
 const { protect, agencyStaff } = require('../middleware/auth');
+const { notifyUsers } = require('../utils/whatsapp');
 
 // GET /api/posts — list posts (agency staff + Client role for their own posts)
 router.get('/', protect, async (req, res) => {
@@ -81,8 +83,8 @@ router.post('/', protect, async (req, res) => {
       dueDate:     scheduledDate ? new Date(scheduledDate) : null,
     });
 
-    // Notify client
-    const client = await Client.findById(clientId).select('userRef businessName');
+    // Notify client (in-app + WhatsApp)
+    const client = await Client.findById(clientId).select('userRef businessName assignedSMM');
     if (client?.userRef) {
       await Notification.create({
         userId:  client.userRef,
@@ -91,7 +93,21 @@ router.post('/', protect, async (req, res) => {
         type:    'approval',
         data:    { postId: post._id },
       });
+      // WhatsApp to client user
+      const clientUser = await User.findById(client.userRef).select('whatsappNumber name');
+      if (clientUser) {
+        const dateStr = scheduledDate ? new Date(scheduledDate).toLocaleDateString('en-IN', { day:'numeric', month:'short' }) : '';
+        notifyUsers(clientUser,
+          `📲 *${client.businessName} — Content Ready for Review*\n\nHi! A new *${category || 'post'}* has been prepared for you${dateStr ? ` (scheduled ${dateStr})` : ''}.\n\nPlease log in to your portal to review and approve:\n👉 https://dotganga.in\n\nTeam DotGanga`
+        ).catch(() => {});
+      }
     }
+
+    // WhatsApp to admins when post is created
+    const admins = await User.find({ role: { $in: ['Admin','Super Admin'] }, isActive: true }).select('whatsappNumber name').limit(3);
+    notifyUsers(admins,
+      `📢 *New Post Added*\n\nClient: *${client?.businessName || clientId}*\nType: ${category || 'Post'}\nBy: ${req.user.name}\n${scheduledDate ? 'Scheduled: ' + new Date(scheduledDate).toLocaleDateString('en-IN') : ''}\n\nStatus: Pending client approval`
+    ).catch(() => {});
 
     res.status(201).json({ success: true, post, approval });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
@@ -126,7 +142,7 @@ router.patch('/:id/approve', protect, async (req, res) => {
       { status, clientNote: note, reviewedBy: req.user._id, reviewedAt: new Date() }
     );
 
-    // Notify the creator
+    // Notify the creator (in-app + WhatsApp)
     await Notification.create({
       userId:  post.createdBy,
       title:   `Post ${status}`,
@@ -134,6 +150,15 @@ router.patch('/:id/approve', protect, async (req, res) => {
       type:    'approval',
       data:    { postId: post._id },
     });
+
+    const creator = await User.findById(post.createdBy).select('whatsappNumber name');
+    if (creator) {
+      const emoji   = status === 'Approved' ? '✅' : status === 'Rejected' ? '❌' : '✏️';
+      const action  = status === 'Approved' ? 'approved and scheduled' : status === 'Rejected' ? 'declined' : 'sent back for revision';
+      notifyUsers(creator,
+        `${emoji} *Post ${status}*\n\nHi ${creator.name}, your post has been *${action}* by the client.\n${note ? `\n💬 Feedback: "${note}"\n` : ''}\nLogin to see details: https://dotganga.in`
+      ).catch(() => {});
+    }
 
     res.json({ success: true, post });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
