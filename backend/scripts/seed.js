@@ -5,7 +5,7 @@ const bcrypt   = require('bcryptjs');
 // ─── STAFF ────────────────────────────────────────────────────────────────────
 
 const STAFF = [
-  { name:'DotGanga Admin', email:'admin@dotganga.com',   password:'admin123',   role:'Admin',   designation:'System Administrator', department:'Management', salary:0      },
+  { name:'DotGanga Admin', email:'admin@dotganga.com',   password:'admin123',   role:'Admin',   designation:'System Administrator', department:'Management', salary:0,     whatsappNumber:'919116861972' },
   { name:'Priya Kapoor',   email:'manager@dotganga.com', password:'manager123', role:'Manager', designation:'Operations Manager',   department:'Management', salary:55000  },
   { name:'Rudra',          email:'rudra@dotganga.com',   password:'rudra123',   role:'Staff',   designation:'Sales Executive',      department:'Sales',      salary:30000  },
   { name:'TP',             email:'tp@dotganga.com',      password:'tp1234',     role:'Staff',   designation:'Sales Executive',      department:'Sales',      salary:30000  },
@@ -245,7 +245,7 @@ const seed = async () => {
     const result = await usersCol.findOneAndUpdate(
       { email: s.email },
       {
-        $set: { name:s.name, email:s.email, password:hashed, role:s.role, designation:s.designation, department:s.department, isActive:true, updatedAt:now },
+        $set: { name:s.name, email:s.email, password:hashed, role:s.role, designation:s.designation, department:s.department, isActive:true, updatedAt:now, ...(s.whatsappNumber ? { whatsappNumber:s.whatsappNumber } : {}) },
         $setOnInsert: { phone:'', whatsappNumber:'', joinedDate:now, createdAt:now },
       },
       { upsert:true, returnDocument:'after' },

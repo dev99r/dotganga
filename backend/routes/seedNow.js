@@ -148,6 +148,12 @@ router.post('/', protect, async (req, res) => {
   const adminId     = req.user._id;
 
   try {
+    // Set admin WhatsApp number
+    await usersCol.updateOne(
+      { email: 'admin@dotganga.com' },
+      { $set: { whatsappNumber: '919116861972' } }
+    );
+
     for (const cd of CLIENT_DATA) {
       // 1. Portal user
       const ph  = await bcrypt.hash(cd.portalPassword, 10);
