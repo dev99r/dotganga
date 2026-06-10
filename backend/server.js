@@ -22,6 +22,8 @@ const metaAdsRoutes        = require('./routes/metaAds');
 const approvalsRoutes      = require('./routes/approvals');
 const mediaRoutes          = require('./routes/media');
 const notificationsRoutes  = require('./routes/notifications');
+const whatsappRoutes       = require('./routes/whatsapp');
+const seedNowRoutes        = require('./routes/seedNow');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -71,6 +73,8 @@ app.use('/api/meta-ads',      metaAdsRoutes);
 app.use('/api/approvals',     approvalsRoutes);
 app.use('/api/media',         mediaRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/whatsapp',     whatsappRoutes);
+app.use('/api/seed-now',    seedNowRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running', timestamp: new Date().toISOString() });
