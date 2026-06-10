@@ -131,7 +131,7 @@ router.post(
 // PUT /api/staff/:id — update profile (Admin + Manager)
 router.put('/:id', protect, managerOrAdmin, async (req, res, next) => {
   try {
-    const allowed = ['name', 'email', 'designation', 'department', 'phone', 'isActive', 'joinedDate'];
+    const allowed = ['name', 'email', 'designation', 'department', 'phone', 'whatsappNumber', 'isActive', 'joinedDate'];
     const updates = {};
     allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 

@@ -176,10 +176,14 @@ function StaffCard({ member, isAdmin, onEdit, onSalary, onToggle }) {
 }
 
 // ── Add / Edit Modal ───────────────────────────────────────────────────────────
-const EMPTY_FORM = { name: '', email: '', password: '', designation: '', department: '', phone: '', role: 'Staff', joinedDate: new Date().toISOString().slice(0, 10) };
+const EMPTY_FORM = { name: '', email: '', password: '', designation: '', department: '', phone: '', whatsappNumber: '', role: 'Staff', joinedDate: new Date().toISOString().slice(0, 10) };
 
 function StaffModal({ mode, initial, onClose, onSaved }) {
-  const [form,       setForm]       = useState(initial || EMPTY_FORM);
+  const [form, setForm] = useState(
+    initial
+      ? { ...EMPTY_FORM, ...initial, whatsappNumber: initial.whatsappNumber || '' }
+      : EMPTY_FORM
+  );
   const [showPass,   setShowPass]   = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -198,7 +202,8 @@ function StaffModal({ mode, initial, onClose, onSaved }) {
       } else {
         const { data } = await api.put(`/staff/${initial._id}`, {
           name: form.name, email: form.email, designation: form.designation,
-          department: form.department, phone: form.phone, joinedDate: form.joinedDate,
+          department: form.department, phone: form.phone,
+          whatsappNumber: form.whatsappNumber, joinedDate: form.joinedDate,
         });
         toast.success('Profile updated.');
         onSaved(data.user, 'edit');
@@ -359,6 +364,25 @@ function StaffModal({ mode, initial, onClose, onSaved }) {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-white transition-colors"
               />
             </div>
+          </div>
+
+          {/* WhatsApp Number */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              WhatsApp Number
+              <span className="ml-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full normal-case">For alerts &amp; notifications</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base">💬</span>
+              <input
+                type="tel" value={form.whatsappNumber || ''} onChange={e => set('whatsappNumber', e.target.value)}
+                placeholder="917891234567  (country code + number, no spaces or +)"
+                className="w-full bg-emerald-50 border border-emerald-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:bg-white transition-colors placeholder-slate-400 font-mono"
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium">
+              Example: <span className="font-mono font-bold text-slate-600">917891234567</span> (India +91 then 10-digit number)
+            </p>
           </div>
 
           {/* Preview card (add mode) */}
